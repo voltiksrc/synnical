@@ -32,7 +32,7 @@ void show_help() {
     std::cout << "  --list-installed    List installed packages\n";
     std::cout << "  --sync              Sync repositories\n";
     std::cout << "  --version           Show Omi version\n";
-    std::cout << "  ?, --help, -h       Show this menu\n";
+    std::cout << "  --help, -h          Show this menu\n";
 }
 
 int main(int argc, char *argv[]) {
@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
 
     string command = argv[1];
 
-    if (command == "?" || command == "-h" || command == "--help") {
+    if (command == "-h" || command == "--help") {
         show_help();
         return 0;
     }
