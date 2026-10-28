@@ -1,0 +1,6 @@
+[system]
+hostname = "crypt"
+timezone = "America/Los_Angeles"
+
+[packages]
+install = ["git", "curl", "fish"]
