@@ -3,12 +3,15 @@
 #include <string>
 #include <filesystem>
 #include <vector>
+#include <optional>
 
 struct Config {
     std::string hostname;
     std::string timezone;
+    std::string locale;
+    std::string shell;
 
     std::vector<std::string> packages;
 };
 
-Config parse_daycare(const std::filesystem::path& path);
+std::optional<Config> parse_daycare(const std::filesystem::path& path);

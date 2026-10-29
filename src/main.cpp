@@ -20,7 +20,7 @@ void smversion() {
 }
 
 void show_help() {
-    std::cout << "Synnical Package Manager\n\n";
+    std::cout << "Synnical - Source-based system manager\n\n";
     std::cout << "Usage: synnical <command> [package...]\n\n";
 
     std::cout << "Commands:\n";
@@ -29,7 +29,7 @@ void show_help() {
     std::cout << "  rm <package>        Alias for remove\n";
     std::cout << "  search <query>      Search repositories\n";
     std::cout << "  resolve <package>   Preview package dependencies\n";
-    std::cout << "  apply               Apply the configuration\n";
+    std::cout << "  apply               Apply the daycare configuration\n";
     std::cout << "  --list-installed    List installed packages\n";
     std::cout << "  --sync              Sync repositories\n";
     std::cout << "  --version           Show Synnical's version\n";
@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
     }
 
     if (command == "--list-installed") {
-        Database db("/tmp/synnical-root/var/lib/omi/installed.db");
+        Database db("/tmp/synnical-root/var/lib/synnical/installed.db");
 
         if (!db.initialize()) {
             output::error("Failed to initialize database.");
@@ -70,12 +70,18 @@ int main(int argc, char *argv[]) {
     }
 
     if (command == "apply") {
-        Config config = parse_daycare("examples/daycare.toml");
+        auto config = parse_daycare("examples/daycare.toml");
     
-        std::cout<<"Hostname->"<<config.hostname<<'\n';
-        std::cout<<"Timezone->"<<config.timezone<<'\n';
+        if (!config) {
+            return 1;
+        }
 
-        for (const auto& package : config.packages) {
+        std::cout<<"Hostname->"<<config->hostname<<'\n';
+        std::cout<<"Timezone->"<<config->timezone<<'\n';
+        std::cout<<"Locale->"<<config->locale<<'\n';
+        std::cout<<"Shell->"<<config->shell<<'\n';
+
+        for (const auto& package : config->packages) {
              std::cout<<package<<'\n';
         }
 

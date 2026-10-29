@@ -1,6 +1,7 @@
 # synnical
 
-A Source based C++ system manager that uses TOML recipes that handles packages and someother system settings.
+A Source based C++ system manager that handles packages using TOML recipes, and some other 
+system settings, such as timezone, hostname, locale, and shell/user.
 
 ## Development
 
@@ -55,13 +56,17 @@ sudo cmake --install build
 
 ## Usage
 
-Source install:
+Apply the default configuration.
 
 ```bash
-sudo synnical -Fetch fastfetch
+sudo synnical apply
 ```
 
 ## Status
 
+It is able to parse the configuration file, extract the hostname, timezone, and packagesection, and print it.
+
+<!--
 It's able to download a tarball, verify with sha256, extract,
 install dependencies, build, stage, and install.
+-->

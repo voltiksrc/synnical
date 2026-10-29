@@ -1,6 +1,8 @@
 [system]
 hostname = "crypt"
 timezone = "America/Los_Angeles"
+locale = "en_US.UTF-8"
+shell = "fish"
 
 [packages]
 install = ["git", "curl", "fish"]
