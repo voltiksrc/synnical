@@ -82,16 +82,17 @@ int main(int argc, char *argv[]) {
             return 1;
         }
 
-        std::cout << "Hostname->" << config->hostname << '\n';
-        std::cout << "Timezone->" << config->timezone << '\n';
-        std::cout << "Locale->" << config->locale << '\n';
-        std::cout << "Shell->" << config->shell << '\n';
+        // Install requested packages first. Never change the target host OS.
+        if (!config->packages.empty() && !install_requested(config->packages)) {
+            return 1;
+        }
 
-        return install_requested(config->packages) ? 0 : 1;
+        if (!apply_timezone(config->timezone, "/tmp/synnical-test-root")) {
+            return 1;
+        }
 
         return 0;
     }
-
     // Commands below require at least one package argument.
     if (argc < 3) {
         output::error("Missing package argument.");

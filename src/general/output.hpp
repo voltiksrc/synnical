@@ -4,7 +4,14 @@
 
 namespace output {
     inline void stage(std::string_view message) {
-        std::cout << "\n>> " << message << '\n';
+        static bool first_stage = true;
+
+        if (!first_stage) {
+            std::cout<<'\n';
+        }
+
+        std::cout << ">> " << message << '\n';
+        first_stage = false;
     }
 
     inline void info(std::string_view message) {

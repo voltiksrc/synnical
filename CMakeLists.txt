@@ -32,6 +32,7 @@ add_executable(synnical
     src/packages/remove.cpp
     src/packages/solver.cpp
     src/config/daycare.cpp
+    src/config/timezone.cpp
 )
 
 target_include_directories(synnical PRIVATE

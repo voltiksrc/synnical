@@ -1,8 +1,15 @@
 [system]
 hostname = "crypt"
 timezone = "America/Los_Angeles"
-locale = "en_US.UTF-8"
-shell = "fish"
 
 [packages]
-install = ["git", "curl", "fish"]
+install = []
+
+# This is the user configuration, You can modify your shell, username, 
+# and Home directory. If you need more help and information on this section 
+# Than I highly recommend you go read my documentation on daycare and the options.
+[users.voltik]
+shell = "/usr/bin/fish"
+
+[repositories]
+enabled = ["main"]
