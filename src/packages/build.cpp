@@ -44,10 +44,8 @@ bool build_source(const Package &info, const std::filesystem::path &source_dir) 
     } else if (info.build_system == "cmake") {
         output::info("Configuring with CMake...");
 
-        if (run_command({
-                "cmake", "-S", ".", "-B", "build",
-                "-DCMAKE_INSTALL_PREFIX=/usr"
-            }, source_dir) != 0) {
+        if (run_command({"cmake", "-S", ".", "-B", "build", "-DCMAKE_INSTALL_PREFIX=/usr"},
+                        source_dir) != 0) {
             output::error("CMake configure failed so fix it.");
             return false;
         }
@@ -57,7 +55,7 @@ bool build_source(const Package &info, const std::filesystem::path &source_dir) 
         if (run_command({"cmake", "--build", "build", "--parallel"}, source_dir) != 0) {
             output::error("oh dude, cmake build failed? oh well.");
             return false;
-        } 
+        }
 
     } else if (info.build_system == "cargo") {
         output::info("Building with Cargo...");
@@ -81,33 +79,43 @@ bool build_source(const Package &info, const std::filesystem::path &source_dir) 
             return false;
         }
     } else if (info.build_system == "go") {
-         output::info("Building with Go...");
+        output::info("Building with Go...");
 
-         // Keep the compiled executable in its own directory
-         fs::path build_dir = fs::absolute(source_dir / ".synnical-go-build");
+        // Keep the compiled executable in its own directory
+        fs::path build_dir = fs::absolute(source_dir / ".synnical-go-build");
 
-         fs::create_directories(build_dir);
+        fs::create_directories(build_dir);
 
-         fs::path binary = build_dir / info.name;
+        fs::path binary = build_dir / info.name;
 
-         if (run_command({"go", "build", "-o", binary.string(), "."}, source_dir) != 0) {
-             output::error("Go build failed, and you should go fix it.");
-             return false;
-         }
+        if (run_command({"go", "build", "-o", binary.string(), "."}, source_dir) != 0) {
+            output::error("Go build failed, and you should go fix it.");
+            return false;
+        }
     } else if (info.build_system == "openssl") {
-         output::info("Building with openssl backend...");
+        output::info("Building with openssl backend...");
 
-         if (run_command({"./Configure", "--prefix=/usr", "--libdir=lib"}, source_dir) != 0) {
-             return false;
-         }
-         
-         if (run_command({"make", "-j8"}, source_dir) != 0) {
-             output::error("OpenSSL build failed, and you should go fix it.");
-             return false;
-         }
+        if (run_command({"./Configure", "--prefix=/usr", "--libdir=lib"}, source_dir) != 0) {
+            return false;
+        }
+
+        if (run_command({"make", "-j8"}, source_dir) != 0) {
+            output::error("OpenSSL build failed, and you should go fix it.");
+            return false;
+        }
+    } else if (info.build_system == "rust-bootstrap") {
+        output::stage("Bootstrapping Rust toolchain...");
+
+        if (run_command({"./configure", "--set", "install.prefix=/usr"}, source_dir) != 0) {
+            return false;
+        }
+
+        if (run_command({"./x.py", "build"}, source_dir) != 0) {
+            return false;
+        }
     } else {
-         output::error("Unsupported build system: " + info.build_system);
-         return false;
+        output::error("Unsupported build system: " + info.build_system);
+        return false;
     }
 
     output::stage("Build completed successfully. WOOHOO");

@@ -13,6 +13,7 @@
 #include "recipe.hpp"
 #include "sha256.hpp"
 #include "stage.hpp"
+#include "solver.hpp"
 
 using std::string;
 
@@ -23,6 +24,27 @@ bool is_source_root(const fs::path &path) {
            fs::exists(path / "configure") || fs::exists(path / "Makefile") ||
            fs::exists(path / "Cargo.toml") || fs::exists(path / "wscript") ||
            fs::exists(path / "go.mod") || fs::exists(path / "Configure");
+}
+
+bool install_requested(const std::vector<std::string> &requested) {
+    std::vector<PlannedPackage> plan;
+
+    // Resolve all requested packages together.
+    if (!solve_install_plan(requested, plan))
+        return false;
+
+    // Install dependencies before their dependents.
+    for (const auto &entry : plan) {
+        output::stage("Installing " + entry.name + "-" + entry.version);
+
+        // Verify that the recipe matches the solver's version.
+        if (!install_package(entry.name, entry.version)) {
+            output::error("Installation stopped at " + entry.name);
+            return false;
+        }
+    }
+
+    return true;
 }
 
 bool install_package(const string &package, const string &expected_version) {
@@ -87,8 +109,8 @@ bool install_package(const string &package, const string &expected_version) {
     }
 
     if (status == InstallStatus::Installed) {
-        output::error("Package already installed: " + info.name);
-        return false;
+        output::info("Package already installed: " + info.name);
+        return true;
     }
 
     // Checks if any of the stages are empty and if it is we exit before doing the

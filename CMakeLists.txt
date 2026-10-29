@@ -6,7 +6,6 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(PkgConfig REQUIRED)
-find_package(OpenSSL REQUIRED)
 
 pkg_check_modules(CURL REQUIRED IMPORTED_TARGET libcurl)
 pkg_check_modules(ARCHIVE REQUIRED IMPORTED_TARGET libarchive)
@@ -14,6 +13,7 @@ pkg_check_modules(TOMLPLUSPLUS REQUIRED IMPORTED_TARGET tomlplusplus)
 pkg_check_modules(SQLITE3 REQUIRED IMPORTED_TARGET sqlite3)
 pkg_check_modules(LIBSOLV REQUIRED IMPORTED_TARGET libsolv)
 pkg_check_modules(LIBSOLVEXT REQUIRED IMPORTED_TARGET libsolvext)
+pkg_check_modules(SODIUM REQUIRED IMPORTED_TARGET libsodium)
 
 add_executable(synnical
     src/main.cpp
@@ -50,11 +50,21 @@ target_link_libraries(synnical PRIVATE
     PkgConfig::SQLITE3
     PkgConfig::LIBSOLV
     PkgConfig::LIBSOLVEXT
-    OpenSSL::Crypto
+    PkgConfig::SODIUM
 )
 
 add_executable(solv-generator
     tools/generate_solv.cpp
+)
+
+add_custom_target(generate-solv
+    COMMAND $<TARGET_FILE:solv-generator>
+        "${CMAKE_SOURCE_DIR}/../synnical-repo/index.toml"
+        "${CMAKE_SOURCE_DIR}/../synnical-repo/packages.solv"
+
+    DEPENDS solv-generator
+    COMMENT "Generating libsolv repository metadata"
+    VERBATIM
 )
 
 target_link_libraries(solv-generator PRIVATE

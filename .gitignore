@@ -20,3 +20,4 @@ recipes
 # Temporary files
 *.log
 /lazygit
+/install.sh

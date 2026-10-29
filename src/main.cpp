@@ -2,15 +2,16 @@
 #include <string>
 #include <string_view>
 #include <vector>
+#include <sodium.h>
 
+#include "config/daycare.hpp"
+#include "general/output.hpp"
 #include "packages/database.hpp"
 #include "packages/install.hpp"
-#include "general/output.hpp"
 #include "packages/remove.hpp"
 #include "packages/search.hpp"
 #include "packages/solver.hpp"
 #include "repository/sync.hpp"
-#include "config/daycare.hpp"
 
 using std::string;
 
@@ -39,6 +40,11 @@ void show_help() {
 int main(int argc, char *argv[]) {
     if (argc < 2) {
         std::cout << "Usage: synnical <command> [package...]\n";
+        return 1;
+    }
+
+    if (sodium_init() < 0) {
+        output::error("Failed to initialize libsodium.");
         return 1;
     }
 
@@ -71,19 +77,17 @@ int main(int argc, char *argv[]) {
 
     if (command == "apply") {
         auto config = parse_daycare("examples/daycare.toml");
-    
+
         if (!config) {
             return 1;
         }
 
-        std::cout<<"Hostname->"<<config->hostname<<'\n';
-        std::cout<<"Timezone->"<<config->timezone<<'\n';
-        std::cout<<"Locale->"<<config->locale<<'\n';
-        std::cout<<"Shell->"<<config->shell<<'\n';
+        std::cout << "Hostname->" << config->hostname << '\n';
+        std::cout << "Timezone->" << config->timezone << '\n';
+        std::cout << "Locale->" << config->locale << '\n';
+        std::cout << "Shell->" << config->shell << '\n';
 
-        for (const auto& package : config->packages) {
-             std::cout<<package<<'\n';
-        }
+        return install_requested(config->packages) ? 0 : 1;
 
         return 0;
     }
@@ -104,22 +108,7 @@ int main(int argc, char *argv[]) {
             requested.emplace_back(argv[i]);
         }
 
-        std::vector<PlannedPackage> plan;
-
-        // Resolve all requested packages together.
-        if (!solve_install_plan(requested, plan))
-            return 1;
-
-        // Install dependencies before their dependents.
-        for (const auto &entry : plan) {
-            output::stage("Installing " + entry.name + "-" + entry.version);
-
-            // Verify that the recipe matches the solver's version.
-            if (!install_package(entry.name, entry.version)) {
-                output::error("Installation stopped at " + entry.name);
-                return 1;
-            }
-        }
+        return install_requested(requested) ? 0 : 1;
 
         return 0;
     }

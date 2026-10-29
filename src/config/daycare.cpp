@@ -64,6 +64,8 @@ std::optional<Config> parse_daycare(const fs::path& path)
     // We parse our table so we can get the individual sections inside the config file.
     auto table = toml::parse_file(path.string());
 
+    output::info("Reading Daycare configuration...");
+
     Config config;
 
     auto hostnode = table["system"]["hostname"];

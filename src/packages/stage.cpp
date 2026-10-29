@@ -58,7 +58,8 @@ bool stage_source(const Package &info, const std::filesystem::path &source_dir,
 
     } else if (info.build_system == "waf") {
         // Install into our staging directory instead of real root.
-        if (run_command({"./waf", "install", "--destdir=" + absolute_path.string()}, source_dir) != 0) {
+        if (run_command({"./waf", "install", "--destdir=" + absolute_path.string()}, source_dir) !=
+            0) {
             output::error("Failed to stage Waf files.");
             return false;
         }
@@ -82,8 +83,13 @@ bool stage_source(const Package &info, const std::filesystem::path &source_dir,
         output::info("Go executable staged successfully");
     } else if (info.build_system == "openssl") {
         // OpenSSL custom make install command
-        if (run_command({"make", "install_sw", "DESTDIR=" + absolute_path.string()}, source_dir) != 0) {
+        if (run_command({"make", "install_sw", "DESTDIR=" + absolute_path.string()}, source_dir) !=
+            0) {
             output::error("Failed to stage OpenSSL files.");
+            return false;
+        }
+    } else if (info.build_system == "rust-bootstrap") {
+        if (run_command({"./x.py", "install"}, source_dir, {destdir}) != 0) {
             return false;
         }
     } else {

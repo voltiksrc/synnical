@@ -2,6 +2,7 @@
 #include <filesystem>
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -26,11 +27,7 @@ namespace fs = std::filesystem;
 
 namespace {
 
-bool add_installed_package(
-    Pool *pool,
-    Repo *repo,
-    const InstalledPackage &package
-) {
+bool add_installed_package(Pool *pool, Repo *repo, const InstalledPackage &package) {
     if (package.name.empty() || package.version.empty())
         return false;
 
@@ -38,9 +35,7 @@ bool add_installed_package(
     Id version = pool_str2id(pool, package.version.c_str(), 1);
     Id arch = pool_str2id(pool, "x86_64", 1);
 
-    Id versioned = pool_rel2id(
-        pool, name, version, REL_EQ, 1
-    );
+    Id versioned = pool_rel2id(pool, name, version, REL_EQ, 1);
 
     Id id = repo_add_solvable(repo);
 
@@ -50,13 +45,9 @@ bool add_installed_package(
     solvable->evr = version;
     solvable->arch = arch;
 
-    solvable_add_deparray(
-        solvable, SOLVABLE_PROVIDES, name, 0
-    );
+    solvable_add_deparray(solvable, SOLVABLE_PROVIDES, name, 0);
 
-    solvable_add_deparray(
-        solvable, SOLVABLE_PROVIDES, versioned, 0
-    );
+    solvable_add_deparray(solvable, SOLVABLE_PROVIDES, versioned, 0);
 
     return true;
 }
@@ -81,13 +72,30 @@ bool load_available_repo(Repo *repo, const fs::path &path) {
     return true;
 }
 
-bool load_installed_repo(
-    Pool *pool,
-    Repo *repo,
-    std::map<std::string, std::string> &installed_versions
-) {
-    const fs::path db_path =
-        "/tmp/synnical-test-root/var/lib/synnical/installed.db";
+std::vector<std::string> get_build_dependencies(Pool *pool, Repo *repo, Id package_id) {
+    std::vector<std::string> dependencies;
+
+    Id key = pool_str2id(pool, "synnical:buildrequires", 0);
+
+    if (!key)
+        return dependencies;
+
+    Queue queue;
+    queue_init(&queue);
+
+    repo_lookup_idarray(repo, package_id, key, &queue);
+
+    for (int i = 0; i < queue.count; ++i) {
+        dependencies.emplace_back(pool_id2str(pool, queue.elements[i]));
+    }
+
+    queue_free(&queue);
+    return dependencies;
+}
+
+bool load_installed_repo(Pool *pool, Repo *repo,
+                         std::map<std::string, std::string> &installed_versions) {
+    const fs::path db_path = "/tmp/synnical-test-root/var/lib/synnical/installed.db";
 
     if (!fs::exists(db_path)) {
         repo_internalize(repo);
@@ -124,14 +132,12 @@ bool load_installed_repo(
 
 } // namespace
 
-bool solve_install_plan(
-    const std::vector<std::string> &requested,
-    std::vector<PlannedPackage> &plan
-) {
+bool solve_install_plan(const std::vector<std::string> &requested,
+                        std::vector<PlannedPackage> &plan) {
     plan.clear();
 
-    const fs::path solv_path =
-        ".cache/repos/main/packages.solv";
+    const fs::path solv_path = ".cache/repos/main/packages.solv";
+    std::set<std::string> seen_build_requirements;
 
     if (!fs::is_regular_file(solv_path)) {
         output::error("Repository metadata missing. Run synnical --sync first.");
@@ -146,9 +152,7 @@ bool solve_install_plan(
     try {
         output::stage("Resolving dependencies...");
 
-        std::unique_ptr<Pool, decltype(&pool_free)> pool(
-            pool_create(), pool_free
-        );
+        std::unique_ptr<Pool, decltype(&pool_free)> pool(pool_create(), pool_free);
 
         if (!pool) {
             output::error("Failed to create solver pool.");
@@ -170,9 +174,7 @@ bool solve_install_plan(
 
         std::map<std::string, std::string> installed_versions;
 
-        if (!load_installed_repo(
-                pool.get(), installed, installed_versions
-            )) {
+        if (!load_installed_repo(pool.get(), installed, installed_versions)) {
             return false;
         }
 
@@ -183,20 +185,13 @@ bool solve_install_plan(
         queue_init(&jobs);
 
         for (const auto &name : requested) {
-            Id package_name = pool_str2id(
-                pool.get(), name.c_str(), 1
-            );
+            Id package_name = pool_str2id(pool.get(), name.c_str(), 1);
 
-            queue_push2(
-                &jobs,
-                SOLVER_INSTALL | SOLVER_SOLVABLE_PROVIDES,
-                package_name
-            );
+            queue_push2(&jobs, SOLVER_INSTALL | SOLVER_SOLVABLE_PROVIDES, package_name);
         }
 
-        std::unique_ptr<Solver, decltype(&solver_free)> solver(
-            solver_create(pool.get()), solver_free
-        );
+        std::unique_ptr<Solver, decltype(&solver_free)> solver(solver_create(pool.get()),
+                                                               solver_free);
 
         if (!solver) {
             queue_free(&jobs);
@@ -210,22 +205,17 @@ bool solve_install_plan(
         if (problems != 0) {
             output::error("Could not resolve dependencies.");
 
-            for (Id problem = solver_next_problem(solver.get(), 0);
-                 problem != 0;
+            for (Id problem = solver_next_problem(solver.get(), 0); problem != 0;
                  problem = solver_next_problem(solver.get(), problem)) {
 
-                output::error(
-                    solver_problem2str(solver.get(), problem)
-                );
+                output::error(solver_problem2str(solver.get(), problem));
             }
 
             return false;
         }
 
         std::unique_ptr<Transaction, decltype(&transaction_free)> transaction(
-            solver_create_transaction(solver.get()),
-            transaction_free
-        );
+            solver_create_transaction(solver.get()), transaction_free);
 
         if (!transaction) {
             output::error("Failed to create transaction.");
@@ -246,15 +236,11 @@ bool solve_install_plan(
             }
 
             // Reject removals and unsupported transaction types.
-            int type = transaction_type(
-                transaction.get(), id, SOLVER_TRANSACTION_SHOW_ACTIVE
-            );
+            int type = transaction_type(transaction.get(), id, SOLVER_TRANSACTION_SHOW_ACTIVE);
 
             if (type != SOLVER_TRANSACTION_INSTALL) {
-                output::error(
-                    "Transaction requires an upgrade, removal, "
-                    "or other unsupported operation."
-                );
+                output::error("Transaction requires an upgrade, removal, "
+                              "or other unsupported operation.");
                 return false;
             }
 
@@ -264,21 +250,23 @@ bool solve_install_plan(
                 return false;
             }
 
-            std::string name = pool_id2str(
-                pool.get(), pkg->name
-            );
+            std::string name = pool_id2str(pool.get(), pkg->name);
 
-            std::string version = pool_id2str(
-                pool.get(), pkg->evr
-            );
+            std::string version = pool_id2str(pool.get(), pkg->evr);
 
             // Do not overwrite an already-installed package.
             if (installed_versions.contains(name)) {
-                output::error(
-                    "Package already installed with another version: " +
-                    name
-                );
+                output::error("Package already installed with another version: " + name);
                 return false;
+            }
+
+            auto build_deps = get_build_dependencies(pool.get(), available, id);
+
+            if (!build_deps.empty()) {
+                output::stage("Build dependencies for " + name);
+
+                for (const auto &dependency : build_deps)
+                    output::info(dependency);
             }
 
             plan.push_back({name, version});

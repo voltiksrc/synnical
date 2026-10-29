@@ -4,7 +4,7 @@
 
 namespace output {
     inline void stage(std::string_view message) {
-        std::cout << ">> " << message << '\n';
+        std::cout << "\n>> " << message << '\n';
     }
 
     inline void info(std::string_view message) {
