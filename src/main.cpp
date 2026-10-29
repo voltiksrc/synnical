@@ -69,6 +69,19 @@ int main(int argc, char *argv[]) {
         return db.list_installed() ? 0 : 1;
     }
 
+    if (command == "apply") {
+        Config config = parse_daycare("examples/daycare.toml");
+    
+        std::cout<<"Hostname->"<<config.hostname<<'\n';
+        std::cout<<"Timezone->"<<config.timezone<<'\n';
+
+        for (const auto& package : config.packages) {
+             std::cout<<package<<'\n';
+        }
+
+        return 0;
+    }
+
     // Commands below require at least one package argument.
     if (argc < 3) {
         output::error("Missing package argument.");
@@ -120,17 +133,6 @@ int main(int argc, char *argv[]) {
 
     if (command == "resolve") {
         return resolve_package(package) ? 0 : 1;
-    }
-
-    if (command == "apply") {
-        Config config = parse_daycare("examples/daycare.toml");
-    
-        std::cout<<"Hostname->"<<config.hostname<<'\n';
-        std::cout<<"Timezone->"<<config.timezone<<'\n';
-
-        for (const auto& package : config.packages) {
-             std::cout<<package<<'\n';
-        } 
     }
 
     output::error("Unknown command: " + command);

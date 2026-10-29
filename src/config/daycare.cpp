@@ -9,7 +9,7 @@ using std::string;
 namespace fs = std::filesystem;
 
 Config parse_daycare(const fs::path& path) {
-     auto table = toml::parse_file(path);
+     auto table = toml::parse_file(path.string());
 
     Config config;
 

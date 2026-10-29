@@ -34,6 +34,15 @@ add_executable(synnical
     src/config/daycare.cpp
 )
 
+target_include_directories(synnical PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/packages
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/repository
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/general
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/system
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/config
+)
+
 target_link_libraries(synnical PRIVATE
     PkgConfig::CURL
     PkgConfig::ARCHIVE
