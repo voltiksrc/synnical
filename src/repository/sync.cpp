@@ -1,4 +1,3 @@
-
 #include <cstdio>
 #include <filesystem>
 #include <fstream>
@@ -15,18 +14,18 @@
 #include <solv/repo_solv.h>
 #undef requires
 
-#include "output.hpp"
-#include "sync.hpp"
+#include "general/output.hpp"
+#include "repository/sync.hpp"
 
 namespace fs = std::filesystem;
 
 namespace {
 
 constexpr const char *index_url =
-    "https://raw.githubusercontent.com/voltiksrc/omi-inventory/main/index.toml";
+    "https://raw.githubusercontent.com/voltiksrc/synnical-repo/main/index.toml";
 
 constexpr const char *solv_url =
-    "https://raw.githubusercontent.com/voltiksrc/omi-inventory/main/packages.solv";
+    "https://raw.githubusercontent.com/voltiksrc/synnical-repo/main/packages.solv";
 
 size_t write_callback(char *ptr, size_t size, size_t nmemb, void *userdata) {
     size_t total = size * nmemb;

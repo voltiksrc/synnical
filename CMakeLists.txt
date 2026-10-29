@@ -1,7 +1,6 @@
-
 cmake_minimum_required(VERSION 3.20)
 
-project(omi VERSION 0.3 LANGUAGES CXX)
+project(synical VERSION 0.3 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -16,25 +15,26 @@ pkg_check_modules(SQLITE3 REQUIRED IMPORTED_TARGET sqlite3)
 pkg_check_modules(LIBSOLV REQUIRED IMPORTED_TARGET libsolv)
 pkg_check_modules(LIBSOLVEXT REQUIRED IMPORTED_TARGET libsolvext)
 
-add_executable(omi
+add_executable(synnical
     src/main.cpp
-    src/recipe.cpp
-    src/download.cpp
-    src/sha256.cpp
-    src/extract.cpp
-    src/build.cpp
-    src/install.cpp
-    src/stage.cpp
-    src/process.cpp
-    src/sync.cpp
-    src/database.cpp
-    src/deploy.cpp
-    src/search.cpp
-    src/remove.cpp
-    src/solver.cpp
+    src/repository/recipe.cpp
+    src/packages/download.cpp
+    src/packages/sha256.cpp
+    src/packages/extract.cpp
+    src/packages/build.cpp
+    src/packages/install.cpp
+    src/packages/stage.cpp
+    src/system/process.cpp
+    src/repository/sync.cpp
+    src/packages/database.cpp
+    src/packages/deploy.cpp
+    src/packages/search.cpp
+    src/packages/remove.cpp
+    src/packages/solver.cpp
+    src/config/daycare.cpp
 )
 
-target_link_libraries(omi PRIVATE
+target_link_libraries(synnical PRIVATE
     PkgConfig::CURL
     PkgConfig::ARCHIVE
     PkgConfig::TOMLPLUSPLUS
@@ -44,13 +44,13 @@ target_link_libraries(omi PRIVATE
     OpenSSL::Crypto
 )
 
-add_executable(omi-gen-solv
+add_executable(solv-generator
     tools/generate_solv.cpp
 )
 
-target_link_libraries(omi-gen-solv PRIVATE
+target_link_libraries(solv-generator PRIVATE
     PkgConfig::LIBSOLV
     PkgConfig::TOMLPLUSPLUS
 )
 
-install(TARGETS omi RUNTIME DESTINATION bin)
+install(TARGETS synnical RUNTIME DESTINATION bin)

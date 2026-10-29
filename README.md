@@ -1,11 +1,11 @@
-# omi
+# synnical
 
-A Hybrid C++ package manager that uses TOML recipes and has a relatively simple codebase.
+A Source based C++ system manager that uses TOML recipes that handles packages and someother system settings.
 
 ## Development
 
-It is an independent package manager that anyone can use, if you would
-like to help develop omi, then please contact me at: tsukasatsa@gmail.com
+It is an independent system manager that anyone can use, if you would
+like to help develop synnical, then please contact me at: tsukasatsa@gmail.com
 
 ## Features
 
@@ -38,7 +38,7 @@ like to help develop omi, then please contact me at: tsukasatsa@gmail.com
 ## Build
 
 ```bash
-git clone https://github.com/voltiksrc/omi.git
+git clone https://github.com/voltiksrc/synnical.git
 cd omi
 ```
 
@@ -55,16 +55,10 @@ sudo cmake --install build
 
 ## Usage
 
-Binary install(later):
-
-```bash
-sudo omi -Fetch fastfetch --binary
-```
-
 Source install:
 
 ```bash
-sudo omi -Fetch fastfetch
+sudo synnical -Fetch fastfetch
 ```
 
 ## Status

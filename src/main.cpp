@@ -1,27 +1,27 @@
-
 #include <iostream>
 #include <string>
 #include <string_view>
 #include <vector>
 
-#include "database.hpp"
-#include "install.hpp"
-#include "output.hpp"
-#include "remove.hpp"
-#include "search.hpp"
-#include "solver.hpp"
-#include "sync.hpp"
+#include "packages/database.hpp"
+#include "packages/install.hpp"
+#include "general/output.hpp"
+#include "packages/remove.hpp"
+#include "packages/search.hpp"
+#include "packages/solver.hpp"
+#include "repository/sync.hpp"
+#include "config/daycare.hpp"
 
 using std::string;
 
 void smversion() {
     constexpr std::string_view version{"1.10"};
-    std::cout << "omi version " << version << '\n';
+    std::cout << "Synnical version " << version << '\n';
 }
 
 void show_help() {
-    std::cout << "Omi Package Manager\n\n";
-    std::cout << "Usage: omi <command> [package...]\n\n";
+    std::cout << "Synnical Package Manager\n\n";
+    std::cout << "Usage: synnical <command> [package...]\n\n";
 
     std::cout << "Commands:\n";
     std::cout << "  -Fetch <package...> Fetch and install packages\n";
@@ -29,15 +29,16 @@ void show_help() {
     std::cout << "  rm <package>        Alias for remove\n";
     std::cout << "  search <query>      Search repositories\n";
     std::cout << "  resolve <package>   Preview package dependencies\n";
+    std::cout << "  apply               Apply the configuration\n";
     std::cout << "  --list-installed    List installed packages\n";
     std::cout << "  --sync              Sync repositories\n";
-    std::cout << "  --version           Show Omi version\n";
+    std::cout << "  --version           Show Synnical's version\n";
     std::cout << "  --help, -h          Show this menu\n";
 }
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
-        std::cout << "Usage: omi <command> [package...]\n";
+        std::cout << "Usage: synnical <command> [package...]\n";
         return 1;
     }
 
@@ -58,7 +59,7 @@ int main(int argc, char *argv[]) {
     }
 
     if (command == "--list-installed") {
-        Database db("/tmp/omi-test-root/var/lib/omi/installed.db");
+        Database db("/tmp/synnical-root/var/lib/omi/installed.db");
 
         if (!db.initialize()) {
             output::error("Failed to initialize database.");
@@ -119,6 +120,17 @@ int main(int argc, char *argv[]) {
 
     if (command == "resolve") {
         return resolve_package(package) ? 0 : 1;
+    }
+
+    if (command == "apply") {
+        Config config = parse_daycare("examples/daycare.toml");
+    
+        std::cout<<"Hostname->"<<config.hostname<<'\n';
+        std::cout<<"Timezone->"<<config.timezone<<'\n';
+
+        for (const auto& package : config.packages) {
+             std::cout<<package<<'\n';
+        } 
     }
 
     output::error("Unknown command: " + command);
