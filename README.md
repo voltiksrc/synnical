@@ -1,7 +1,6 @@
 # synnical
 
-A Source based C++ system manager that handles packages using TOML recipes, and some other 
-system settings, such as timezone, hostname, locale, and shell/user.
+A Source based declarative/imperative hybrid C++ system manager that handles packages using TOML recipes, and other system settings, such as timezone, hostname, locale, and shell.
 
 ## Development
 
