@@ -87,7 +87,7 @@ bool load_installed_repo(
     std::map<std::string, std::string> &installed_versions
 ) {
     const fs::path db_path =
-        "/tmp/omi-test-root/var/lib/omi/installed.db";
+        "/tmp/synnical-test-root/var/lib/synnical/installed.db";
 
     if (!fs::exists(db_path)) {
         repo_internalize(repo);
@@ -134,7 +134,7 @@ bool solve_install_plan(
         ".cache/repos/main/packages.solv";
 
     if (!fs::is_regular_file(solv_path)) {
-        output::error("Repository metadata missing. Run omi --sync first.");
+        output::error("Repository metadata missing. Run synnical --sync first.");
         return false;
     }
 
@@ -157,7 +157,7 @@ bool solve_install_plan(
 
         pool_setarch(pool.get(), "x86_64");
 
-        Repo *available = repo_create(pool.get(), "omi-main");
+        Repo *available = repo_create(pool.get(), "synnical-main");
         Repo *installed = repo_create(pool.get(), "installed");
 
         if (!available || !installed) {

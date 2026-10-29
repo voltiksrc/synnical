@@ -64,9 +64,9 @@ bool stage_source(const Package &info, const std::filesystem::path &source_dir,
         }
     } else if (info.build_system == "go") {
         // Get the executable we already compiled in build.cpp
-        fs::path binary = fs::absolute(source_dir / ".omi-go-build" / info.name);
+        fs::path binary = fs::absolute(source_dir / ".synnical-go-build" / info.name);
 
-        // This is where omi will stage the executable
+        // This is where synnical will stage the executable
         fs::path destination = absolute_path / "usr/bin" / info.name;
 
         if (!fs::is_regular_file(binary)) {

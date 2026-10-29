@@ -28,7 +28,7 @@ bool is_source_root(const fs::path &path) {
 bool install_package(const string &package, const string &expected_version) {
 
     if (!fs::is_regular_file(".cache/repos/main/index.toml")) {
-        output::error("Repository index missing, Run omi --sync first.");
+        output::error("Repository index missing, Run synnical --sync first.");
         return false;
     }
 
@@ -67,8 +67,8 @@ bool install_package(const string &package, const string &expected_version) {
         return false;
     }
 
-    fs::path target_root = "/tmp/omi-test-root";
-    fs::path database_path = target_root / "var/lib/omi/installed.db";
+    fs::path target_root = "/tmp/synnical-test-root";
+    fs::path database_path = target_root / "var/lib/synnical/installed.db";
 
     fs::create_directories(database_path.parent_path());
 

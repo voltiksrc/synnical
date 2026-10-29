@@ -125,7 +125,7 @@ string download_source(const string &source_url, const string &name, const strin
     // Follow HTTP redirects.
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
 
-    // tarballdownload HTTP error responses (ownload the tarballsh as 404) as failures.
+    // download HTTP error responses (download the tarballs as 404) as failures.
     curl_easy_setopt(curl, CURLOPT_FAILONERROR, 1L);
 
     Progress progress{};

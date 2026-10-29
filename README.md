@@ -40,7 +40,7 @@ like to help develop synnical, then please contact me at: tsukasatsa@gmail.com
 
 ```bash
 git clone https://github.com/voltiksrc/synnical.git
-cd omi
+cd synnical
 ```
 
 ```bash

@@ -11,8 +11,8 @@
 namespace fs = std::filesystem;
 
 bool remove_package(const std::string &name) {
-    const fs::path root = "/tmp/omi-test-root";
-    const fs::path database_path = root / "var/lib/omi/installed.db";
+    const fs::path root = "/tmp/synnical-test-root";
+    const fs::path database_path = root / "var/lib/synnical/installed.db";
 
     if (!fs::is_regular_file(database_path)) {
         output::error("Installed package database not found");
@@ -58,10 +58,10 @@ bool remove_package(const std::string &name) {
             }
         }
 
-        // Never let a package remove Omi's own database
-        if (relative == fs::path("var/lib/omi") ||
-            relative.string().starts_with("var/lib/omi/")) {
-            output::error("Refusing to remove Omi database files");
+        // Never let a package remove Synnical's own database
+        if (relative == fs::path("var/lib/synnical") ||
+            relative.string().starts_with("var/lib/synnical/")) {
+            output::error("Refusing to remove Synnical database files");
             return false;
         }
 

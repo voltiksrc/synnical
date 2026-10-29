@@ -84,7 +84,7 @@ bool build_source(const Package &info, const std::filesystem::path &source_dir) 
          output::info("Building with Go...");
 
          // Keep the compiled executable in its own directory
-         fs::path build_dir = fs::absolute(source_dir / ".omi-go-build");
+         fs::path build_dir = fs::absolute(source_dir / ".synnical-go-build");
 
          fs::create_directories(build_dir);
 

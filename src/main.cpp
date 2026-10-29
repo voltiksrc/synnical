@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
     }
 
     if (command == "--list-installed") {
-        Database db("/tmp/synnical-root/var/lib/synnical/installed.db");
+        Database db("/tmp/synnical-test-root/var/lib/synnical/installed.db");
 
         if (!db.initialize()) {
             output::error("Failed to initialize database.");

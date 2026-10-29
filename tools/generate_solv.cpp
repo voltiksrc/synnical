@@ -143,7 +143,7 @@ bool add_package(Pool *pool, Repo *repo, const Package &package) {
 
 int main(int argc, char *argv[]) {
     if (argc != 3) {
-        std::cerr << "Usage: omi-gen-solv <index.toml> <packages.solv>\n";
+        std::cerr << "Usage: synnical-gen-solv <index.toml> <packages.solv>\n";
         return 1;
     }
 
@@ -168,7 +168,7 @@ int main(int argc, char *argv[]) {
 
         pool_setarch(pool.get(), "x86_64");
 
-        Repo *repo = repo_create(pool.get(), "omi-main");
+        Repo *repo = repo_create(pool.get(), "synnical-main");
 
         if (!repo)
             return 1;

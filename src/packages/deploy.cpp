@@ -16,7 +16,7 @@ namespace fs = std::filesystem;
 
 namespace {
 
-constexpr const char *test_root = "/tmp/omi-test-root";
+constexpr const char *test_root = "/tmp/synnical-test-root";
 
 struct Entry {
     fs::path source;
