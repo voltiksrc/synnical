@@ -1,16 +1,16 @@
 #include <iostream>
+#include <sodium.h>
 #include <string>
 #include <string_view>
 #include <vector>
-#include <sodium.h>
 
 #include "config/daycare.hpp"
 #include "general/output.hpp"
-#include "packages/database.hpp"
-#include "packages/install.hpp"
-#include "packages/remove.hpp"
-#include "packages/search.hpp"
-#include "packages/solver.hpp"
+#include "marea/database.hpp"
+#include "marea/install.hpp"
+#include "marea/remove.hpp"
+#include "marea/search.hpp"
+#include "marea/solver.hpp"
 #include "repository/sync.hpp"
 
 using std::string;
@@ -25,7 +25,7 @@ void show_help() {
     std::cout << "Usage: synnical <command> [package...]\n\n";
 
     std::cout << "Commands:\n";
-    std::cout << "  -Fetch <package...> Fetch and install packages\n";
+    std::cout << "  -Fetch <package...> Install packages using command-line\n";
     std::cout << "  remove <package>    Remove an installed package\n";
     std::cout << "  rm <package>        Alias for remove\n";
     std::cout << "  search <query>      Search repositories\n";
