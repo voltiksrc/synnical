@@ -2,29 +2,27 @@
 
 **Synnical** is a source-based, declarative/imperative hybrid system manager written in C++23.
 
-It handles package installation, dependency resolution, source compilation, and basic system configuration through TOML files.
-
-Synnical is being developed primarily for **Crypt Linux**, but the goal is to make it usable on other Linux distributions as well.
+It handles package installation, dependency resolution, and source compilation.
 
 > [!NOTE]
-> Synnical is still in active development. It's functional, but not yet suitable for managing your main system's packages. Testing in a container or isolated environment is recommended.
+> Synnical is still in active development. It's functional, but not yet ready to maintain a system.
 
 ## Features
 
-- **Source-based package installation** — Download, verify, extract, compile, and install packages from source.
-- **Dependency resolution** — Uses libsolv to resolve dependencies and determine installation order.
-- **TOML recipes** — Package metadata, sources, dependencies, and build systems are defined in TOML.
-- **SHA-256 verification** — Verifies downloaded sources using libsodium.
-- **Build system support** — Make/Autotools, CMake, Meson, Cargo, Waf, Go, and additional specialized backends.
-- **Installation staging** — Builds are staged before being deployed into the target filesystem.
-- **Package tracking** — Uses SQLite to keep track of installed packages.
-- **Declarative configuration** — Daycare provides an optional way to define packages and system settings in a configuration file.
+- **Source-based package installation** — Download, verify, extract, compile, and install packages from source tarballs
+- **Dependency resolution** — Uses libsolv to resolve dependencies and determine the proper order of installation
+- **TOML recipes** — Package metadata, sources, dependencies, and build systems are all defined in the recipes
+- **SHA-256 verification** — Verifies downloaded sources using libsodium
+- **Build system support** — Make/Autotools, CMake, Meson, Cargo, Waf, Go, and some additional support for packages such as OpenSSL and Rust
+- **Installation staging** — Builds are staged before being deployed into the target filesystem for safety
+- **Package tracking** — Uses SQLite to keep track of installed packages
+- **Declarative configuration** — Daycare provides an optional way to define packages and system settings in a configuration file
 
 ## Daycare
 
 **Daycare** is Synnical's optional declarative configuration system.
 
-Instead of installing packages individually, you can define the packages you want and basic system settings in a TOML file.
+Instead of installing packages individually, you can define the packages you want and some basic system settings in a TOML file.
 
 For example:
 
@@ -40,7 +38,8 @@ install = [
     "fish"
 ]
 
-[users.voltik]
+# Example user
+[users.alice]
 shell = "/usr/bin/fish"
 
 [repositories]
@@ -53,10 +52,10 @@ Apply the configuration with:
 synnical apply
 ```
 
-Daycare currently supports parsing packages and system settings, with timezone application implemented. Other system settings, including hostname and user shells, are still being developed.
+Daycare currently supports parsing packages and system settings, with timezone option working.
 
 > [!IMPORTANT]
-> Review your Daycare configuration before applying it. System settings may be modified, and Synnical is not yet ready for unrestricted system-wide use.
+> Review your Daycare configuration before applying it. System settings may be modified and Synnical is not ready to manage a System yet.
 
 **More information:** [Daycare documentation](documentation/daycare.md)
 
@@ -78,7 +77,7 @@ Install multiple packages:
 synnical -Fetch zlib libpng
 ```
 
-Preview dependency resolution:
+Preview installation plan/dependencies:
 
 ```bash
 synnical resolve fish
@@ -105,18 +104,17 @@ synnical apply
 |---|---|
 | `-Fetch <packages...>` | Resolve and install packages |
 | `remove <package>` | Remove an installed package |
-| `rm <package>` | Alias for `remove` |
 | `search <query>` | Search available packages |
-| `resolve <package>` | Preview dependency resolution |
+| `resolve <package>` | Preview installation plan |
 | `apply` | Apply the Daycare configuration |
-| `--sync` | Synchronize repository metadata |
+| `--sync` | Sync repository metadata |
 | `--list-installed` | List installed packages |
 | `--version` | Display Synnical's version |
 | `--help` | Display available commands |
 
 ## Building
 
-Synnical uses **CMake** and requires a C++23-compatible compiler.
+Synnical uses **CMake** and requires a C++23 compatible compiler.
 
 ### Dependencies
 
@@ -132,7 +130,7 @@ The main development dependencies are:
 - libsodium
 - pkg-config
 
-Additional build tools such as Make, Ninja, Meson, Cargo, Go, and Waf may be required depending on which packages you're building.
+Additional build tools such as Make, Ninja, Cargo, Waf, and Go, may be needed depending on what packages you attempt to install.
 
 ### Compile from source
 
@@ -150,8 +148,6 @@ cmake -S . -B build
 cmake --build build -j4
 ```
 
-CMake will use your configured default generator, such as Unix Makefiles or Ninja.
-
 ### Installation
 
 An experimental installation script is included:
@@ -168,7 +164,7 @@ sudo cmake --install build
 ```
 
 > [!WARNING]
-> Installing the executable does not currently make Synnical production-ready. Some paths, including the installation target root and configuration paths, are still development-specific.
+> Installing the executable does not currently make Synnical production-ready. The installation root and other paths are still development specific.
 
 ## Package repository
 
@@ -196,15 +192,13 @@ requires = []
 build_requires = []
 ```
 
-*This example is illustrative. Actual recipes contain verified source URLs and hashes.*
-
-The repository is still growing, with an initial goal of **100 packages**.
+The repository is still growing! with a goal of **100 packages**.
 
 ## Development status
 
-Synnical is actively being developed, and several features are still incomplete.
+Synnical is actively being developed, and several features are still incomplete unfortunately.
 
-**Working or tested:**
+**Working/tested**
 
 - [x] Source downloading and extraction
 - [x] SHA-256 verification
@@ -212,25 +206,13 @@ Synnical is actively being developed, and several features are still incomplete.
 - [x] Dependency resolution with libsolv
 - [x] SQLite installation tracking
 - [x] Installed-package detection
-- [x] Daycare TOML parsing
 - [x] Declarative timezone configuration
-- [x] Basic Ubuntu Docker testing
-
-**Planned or still being improved:**
-
-- [ ] More complete build dependency isolation
-- [ ] Hostname configuration through Daycare
-- [ ] User and login-shell configuration
-- [ ] Additional package recipes
-- [ ] Reproducible system configurations
-- [ ] Reproducible builds
-- [ ] Binary package support (possibly later)
 
 ## Contributing
 
 Synnical is an independent project, and contributions are welcome.
 
-If you encounter a bug, want to suggest a feature, or would like to improve something, feel free to open an issue or pull request.
+If you encounter a bug, want to suggest a feature, or would like to improve something, feel free to open an issue or pull request!
 
 Package submissions and recipe improvements can be made through the [package repository](https://github.com/voltiksrc/synnical-repo).
 
