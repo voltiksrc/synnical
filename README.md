@@ -1,6 +1,6 @@
 # Synnical
 
-**Synnical** is a source-based, declarative/imperative hybrid system manager written in C++23.
+Synnical is a source-based, declarative/imperative hybrid system manager written in C++23.
 
 It handles package installation, dependency resolution, and source compilation.
 
@@ -20,7 +20,7 @@ It handles package installation, dependency resolution, and source compilation.
 
 ## Daycare
 
-**Daycare** is Synnical's optional declarative configuration system.
+Daycare is Synnical's optional declarative configuration system.
 
 Instead of installing packages individually, you can define the packages you want and some basic system settings in a TOML file.
 
@@ -164,7 +164,7 @@ sudo cmake --install build
 ```
 
 > [!WARNING]
-> Installing the executable does not currently make Synnical production-ready. The installation root and other paths are still development specific.
+> Synnical is not yet ready for personal use. The installation root and other paths are still development specific.
 
 ## Package repository
 
@@ -196,7 +196,7 @@ The repository is still growing! with a goal of **100 packages**.
 
 ## Development status
 
-Synnical is actively being developed, and several features are still incomplete unfortunately.
+Synnical is actively being developed, and several features are still incomplete unfortunately. But thats okay! More features have yet to come but expect some soon.
 
 **Working/tested**
 
