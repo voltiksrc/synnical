@@ -4,17 +4,18 @@
 #include <toml++/toml.hpp>
 #include <vector>
 
-#include "build.hpp"
-#include "database.hpp"
-#include "deploy.hpp"
-#include "download.hpp"
-#include "extract.hpp"
-#include "install.hpp"
-#include "output.hpp"
-#include "recipe.hpp"
-#include "sha256.hpp"
-#include "stage.hpp"
-#include "solver.hpp"
+#include "../general/output.hpp"
+#include "../general/paths.hpp"
+#include "../marea/build.hpp"
+#include "../marea/database.hpp"
+#include "../marea/deploy.hpp"
+#include "../marea/download.hpp"
+#include "../marea/extract.hpp"
+#include "../marea/install.hpp"
+#include "../marea/sha256.hpp"
+#include "../marea/solver.hpp"
+#include "../marea/stage.hpp"
+#include "../repository/recipe.hpp"
 
 using std::string;
 
@@ -27,7 +28,7 @@ bool is_source_root(const fs::path &path) {
            fs::exists(path / "go.mod") || fs::exists(path / "Configure");
 }
 
-bool install_requested(const std::vector<std::string> &requested) {
+bool install_requested(const std::vector<std::string> &requested, const Settings &settings) {
     std::vector<PlannedPackage> plan;
 
     // Resolve all requested packages together.
@@ -39,7 +40,7 @@ bool install_requested(const std::vector<std::string> &requested) {
         output::stage("Installing " + entry.name + "-" + entry.version);
 
         // Verify that the recipe matches the solver's version.
-        if (!install_package(entry.name, entry.version)) {
+        if (!install_package(entry.name, entry.version, settings)) {
             output::error("Installation stopped at " + entry.name);
             return false;
         }
@@ -48,7 +49,8 @@ bool install_requested(const std::vector<std::string> &requested) {
     return true;
 }
 
-bool install_package(const string &package, const string &expected_version) {
+bool install_package(const string &package, const string &expected_version,
+                     const Settings &settings) {
 
     if (!fs::is_regular_file(".cache/repos/main/index.toml")) {
         output::error("Repository index missing, Run synnical --sync first.");
@@ -186,7 +188,7 @@ bool install_package(const string &package, const string &expected_version) {
 
     // build the package after extracting.
     output::stage("Building " + info.name + "-" + info.version);
-    if (!build_source(info, source_dir)) {
+    if (!build_source(info, source_dir, settings)) {
         return false;
     }
 

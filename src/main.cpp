@@ -138,7 +138,7 @@ int main(int argc, char *argv[]) {
     }
 
     if (command == "-Fetch" || command == "-fetch") {
-        return install_requested(positionals) ? 0 : 1;
+        return install_requested(positionals, settings) ? 0 : 1;
     }
 
     if (command == "remove" || command == "rm") {

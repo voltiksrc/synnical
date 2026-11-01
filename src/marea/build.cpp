@@ -1,21 +1,21 @@
-#include "../general/paths.hpp"
 #include <cstdlib>
 #include <filesystem>
 #include <string>
 #include <vector>
 
 #include "../general/output.hpp"
-#include "../marea/build.hpp"
 #include "../system/process.hpp"
+#include "build.hpp"
+
+namespace fs = std::filesystem;
 
 using std::string;
 using std::vector;
 
-std::vector<std::string> make_build_environment() {
-    namespace fs = std::filesystem;
-
-    // Synnical's test installation root. Eventually this should be configurable.
-    const fs::path usr = paths::usr();
+// Give builds access to packages in Synnical's target root first.
+// This doesn't sandbox builds: they can still see the host system.
+static vector<string> make_build_environment(const Settings &settings) {
+    const fs::path usr = settings.root / "usr";
     const string include = (usr / "include").string();
     const string lib = (usr / "lib").string();
     const string lib64 = (usr / "lib64").string();
@@ -25,81 +25,86 @@ std::vector<std::string> make_build_environment() {
         return value ? value : "";
     };
 
+    // Compiler flags use spaces; search paths use colons.
     auto flags = [&](const string &name, const string &extra) -> string {
         const string old = existing(name.c_str());
         return name + "=" + extra + (old.empty() ? "" : " " + old);
     };
 
-    auto paths = [&](const string &name, const string &extra) -> string {
+    auto search_path = [&](const string &name, const string &extra) -> string {
         const string old = existing(name.c_str());
         return name + "=" + extra + (old.empty() ? "" : ":" + old);
     };
 
-    // Search Synnical's dependencies before the host's, without modifying
-    // the parent process environment. This is NOT complete build isolation.
+    // Only the child process gets these variables, not Synnical itself.
     return {
         flags("CPPFLAGS", "-I" + include),
         flags("CFLAGS", "-I" + include),
         flags("CXXFLAGS", "-I" + include),
         flags("LDFLAGS", "-L" + lib + " -L" + lib64),
-        paths("PKG_CONFIG_PATH",
-              lib + "/pkgconfig:" + lib64 + "/pkgconfig:" + (usr / "share/pkgconfig").string()),
-        paths("CMAKE_PREFIX_PATH", usr.string()),
-        paths("PATH", (usr / "bin").string()),
+        search_path("PKG_CONFIG_PATH",
+                    lib + "/pkgconfig:" + lib64 +
+                        "/pkgconfig:" + (usr / "share/pkgconfig").string()),
+        search_path("CMAKE_PREFIX_PATH", usr.string()),
+        search_path("PATH", (usr / "bin").string()),
         flags("CGO_CPPFLAGS", "-I" + include),
         flags("CGO_LDFLAGS", "-L" + lib + " -L" + lib64),
     };
 }
 
-// Builds the package using its specified build system.
-bool build_source(const Package &info, const std::filesystem::path &source_dir) {
-    namespace fs = std::filesystem;
-    const auto build_env = make_build_environment();
-    const fs::path usr = paths::usr();
+// Build the package using the system selected in its recipe.
+bool build_source(const Package &info, const fs::path &source_dir, const Settings &settings) {
+    if (settings.build_jobs == 0) {
+        output::error("Build jobs must be greater than zero.");
+        return false;
+    }
+
+    const fs::path usr = settings.root / "usr";
+    const auto build_env = make_build_environment(settings);
+    const bool show_output = settings.verbose || settings.show_build_output;
+    const string jobs = std::to_string(settings.build_jobs);
 
     output::info("Build system: " + info.build_system);
 
+    // Quiet builds keep their output in a temporary log. The process runner
+    // shows that log if a command fails, so compiler errors aren't lost.
+    auto run = [&](const vector<string> &args, const string &step) -> bool {
+        output::info(step);
+        if (run_command(args, source_dir, build_env, show_output) == 0)
+            return true;
+
+        output::error("Failed to " + step + " for " + info.name + ".");
+        return false;
+    };
+
     if (info.build_system == "make") {
-        if (fs::exists(source_dir / "configure")) {
-            output::info("Running configure...");
-
-            if (run_command({"./configure", "--prefix=/usr"}, source_dir, build_env) != 0) {
-                output::error("Make configure failed, how about you fix it yourself?");
+        // Most autotools packages use configure. CMake's source release
+        // instead uses bootstrap, which creates its Makefiles.
+        if (fs::is_regular_file(source_dir / "configure")) {
+            if (!run({"./configure", "--prefix=/usr"}, "configure sources"))
                 return false;
-            }
+        } else if (fs::is_regular_file(source_dir / "bootstrap")) {
+            if (!run({"./bootstrap", "--prefix=/usr"}, "bootstrap sources"))
+                return false;
         }
 
-        output::info("Running make...");
-
-        if (run_command({"make", "-j4"}, source_dir, build_env) != 0) {
-            output::error("Make compile failed sadly.");
+        if (!run({"make", "-j" + jobs}, "compile sources"))
             return false;
-        }
-    } else if (info.build_system == "meson") {
-        output::info("Configuring with Meson...");
 
+    } else if (info.build_system == "meson") {
         const string pkg_dirs = (usr / "lib/pkgconfig").string() + ":" +
                                 (usr / "lib64/pkgconfig").string() + ":" +
                                 (usr / "share/pkgconfig").string();
-        if (run_command(
-                {"meson", "setup", "build", "--prefix=/usr", "--pkg-config-path=" + pkg_dirs},
-                source_dir,
-                build_env) != 0) {
-            output::error("Meson setup failed. How about you switch to cmake?");
-            return false;
-        }
 
-        output::info("Compiling with Meson...");
-
-        if (run_command({"meson", "compile", "-C", "build"}, source_dir, build_env) != 0) {
-            output::error("Meson compile failed, CMake is better anyway.");
+        if (!run({"meson", "setup", "build", "--prefix=/usr", "--pkg-config-path=" + pkg_dirs},
+                 "configure with Meson"))
             return false;
-        }
+
+        if (!run({"meson", "compile", "-C", "build", "-j", jobs}, "compile with Meson"))
+            return false;
 
     } else if (info.build_system == "cmake") {
-        output::info("Configuring with CMake...");
-
-        if (run_command(
+        if (!run(
                 {"cmake",
                  "-S",
                  ".",
@@ -109,82 +114,62 @@ bool build_source(const Package &info, const std::filesystem::path &source_dir) 
                  "-DCMAKE_PREFIX_PATH=" + usr.string(),
                  "-DCMAKE_INCLUDE_PATH=" + (usr / "include").string(),
                  "-DCMAKE_LIBRARY_PATH=" + (usr / "lib").string() + ";" + (usr / "lib64").string()},
-                source_dir,
-                build_env) != 0) {
-            output::error("CMake configure failed, so fix it.");
+                "configure with CMake"))
             return false;
-        }
 
-        output::info("Compiling with CMake...");
-
-        if (run_command({"cmake", "--build", "build", "--parallel"}, source_dir, build_env) != 0) {
-            output::error("oh dude, cmake build failed? oh well.");
+        if (!run({"cmake", "--build", "build", "--parallel", jobs}, "compile with CMake"))
             return false;
-        }
 
     } else if (info.build_system == "cargo") {
-        output::info("Building with Cargo...");
-
-        if (run_command({"cargo", "build", "--release"}, source_dir, build_env) != 0) {
-            output::error("oh dude, cargo build failed? oh well.");
+        if (!run({"cargo", "build", "--release", "-j", jobs}, "compile with Cargo"))
             return false;
-        }
+
     } else if (info.build_system == "waf") {
-        output::info("Building with Waf...");
-
-        // Waf uses a configure step before compile
-        if (run_command({"./waf", "configure", "--prefix=/usr"}, source_dir, build_env) != 0) {
-            output::error("oh dude what? waf configuration failed? oh well.");
+        // Waf configures and builds through the same ./waf script.
+        if (!run({"./waf", "configure", "--prefix=/usr"}, "configure with Waf"))
             return false;
-        }
 
-        // Compile the package using its Waf build script
-        if (run_command({"./waf", "build"}, source_dir, build_env) != 0) {
-            output::error("Aww man waf build failed.");
+        if (!run({"./waf", "build", "-j", jobs}, "compile with Waf"))
             return false;
-        }
+
     } else if (info.build_system == "go") {
-        output::info("Building with Go...");
-
-        // Keep the compiled executable in its own directory
-        fs::path build_dir = fs::absolute(source_dir / ".synnical-go-build");
-
+        // Keep Go's binary separate from the extracted source files.
+        const fs::path build_dir = fs::absolute(source_dir / ".synnical-go-build");
         fs::create_directories(build_dir);
+        const fs::path binary = build_dir / info.name;
 
-        fs::path binary = build_dir / info.name;
-
-        if (run_command({"go", "build", "-o", binary.string(), "."}, source_dir, build_env) != 0) {
-            output::error("Go build failed, and you should go fix it.");
+        if (!run({"go", "build", "-p", jobs, "-o", binary.string(), "."}, "compile with Go"))
             return false;
-        }
+
     } else if (info.build_system == "openssl") {
-        output::info("Building with openssl backend...");
-
-        if (run_command({"./Configure", "--prefix=/usr", "--libdir=lib"}, source_dir, build_env) !=
-            0) {
+        // OpenSSL uses an uppercase Configure script.
+        if (!run({"./Configure", "--prefix=/usr", "--libdir=lib"}, "configure OpenSSL"))
             return false;
-        }
 
-        if (run_command({"make", "-j8"}, source_dir, build_env) != 0) {
-            output::error("OpenSSL build failed, and you should go fix it.");
+        if (!run({"make", "-j" + jobs}, "compile OpenSSL"))
             return false;
-        }
+
+    } else if (info.build_system == "perl") {
+        // Perl also uses uppercase Configure, but its flags are different.
+        if (!run({"sh", "Configure", "-des", "-Dprefix=/usr"}, "configure Perl"))
+            return false;
+
+        if (!run({"make", "-j" + jobs}, "compile Perl"))
+            return false;
+
     } else if (info.build_system == "rust-bootstrap") {
-        output::stage("Bootstrapping Rust toolchain...");
-
-        if (run_command({"./configure", "--set", "install.prefix=/usr"}, source_dir, build_env) !=
-            0) {
+        // Rust's x.py handles its own build stages.
+        if (!run({"./configure", "--set", "install.prefix=/usr"}, "configure Rust"))
             return false;
-        }
 
-        if (run_command({"./x.py", "build"}, source_dir, build_env) != 0) {
+        if (!run({"./x.py", "build", "-j", jobs}, "bootstrap Rust"))
             return false;
-        }
+
     } else {
         output::error("Unsupported build system: " + info.build_system);
         return false;
     }
 
-    output::stage("Build completed successfully. WOOHOO");
+    output::success("Built " + info.name + "-" + info.version);
     return true;
 }
