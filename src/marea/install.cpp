@@ -1,11 +1,9 @@
-#include "../general/paths.hpp"
 #include <filesystem>
 #include <string>
 #include <toml++/toml.hpp>
 #include <vector>
 
 #include "../general/output.hpp"
-#include "../general/paths.hpp"
 #include "../marea/build.hpp"
 #include "../marea/database.hpp"
 #include "../marea/deploy.hpp"
@@ -32,7 +30,7 @@ bool install_requested(const std::vector<std::string> &requested, const Settings
     std::vector<PlannedPackage> plan;
 
     // Resolve all requested packages together.
-    if (!solve_install_plan(requested, plan))
+    if (!solve_install_plan(requested, plan, settings))
         return false;
 
     // Install dependencies before their dependents.
@@ -52,12 +50,13 @@ bool install_requested(const std::vector<std::string> &requested, const Settings
 bool install_package(const string &package, const string &expected_version,
                      const Settings &settings) {
 
-    if (!fs::is_regular_file(".cache/repos/main/index.toml")) {
+    const fs::path repo_dir = settings.cache / "repos/main";
+    if (!fs::is_regular_file(repo_dir / "index.toml")) {
         output::error("Repository index missing, Run synnical --sync first.");
         return false;
     }
 
-    auto index = toml::parse_file(".cache/repos/main/index.toml");
+    auto index = toml::parse_file((repo_dir / "index.toml").string());
 
     auto recipe = index["packages"][package].value<std::string>();
 
@@ -77,7 +76,7 @@ bool install_package(const string &package, const string &expected_version,
 
     std::string recipe_url = base_url + *recipe;
 
-    fs::path recipe_path = fs::path(".cache/repos/main") / *recipe;
+    fs::path recipe_path = repo_dir / *recipe;
 
     if (!download_recipe(recipe_url, recipe_path)) {
         output::error("Failed to download recipe.");
@@ -92,7 +91,7 @@ bool install_package(const string &package, const string &expected_version,
         return false;
     }
 
-    fs::path target_root = paths::root();
+    fs::path target_root = settings.root;
     fs::path database_path = target_root / "var/lib/synnical/installed.db";
 
     fs::create_directories(database_path.parent_path());
@@ -125,7 +124,7 @@ bool install_package(const string &package, const string &expected_version,
 
     // Download the package and save the archive path so we can use it later.
     output::stage("Downloading " + info.name + "...");
-    string archive = download_source(info.url, info.name, info.version);
+    string archive = download_source(info.url, info.name, info.version, settings);
 
     if (archive.empty()) {
         return false;
@@ -141,13 +140,13 @@ bool install_package(const string &package, const string &expected_version,
     // Extract the downloaded archive after verifying its SHA-256.
     output::stage("Extracting sources");
 
-    if (!extract_source(archive, info.name, info.version, ".cache/build")) {
+    if (!extract_source(archive, info.name, info.version, settings.cache / "build")) {
         output::error("Extraction failed.");
         return false;
     }
 
     // Find the source directory.
-    fs::path extract_dir = fs::path(".cache/build") / (info.name + "-" + info.version);
+    fs::path extract_dir = settings.cache / "build" / (info.name + "-" + info.version);
 
     fs::path source_dir;
 
@@ -193,14 +192,14 @@ bool install_package(const string &package, const string &expected_version,
     }
 
     // Stage the compiled package.
-    fs::path stage_dir = fs::path(".cache/stage") / (info.name + "-" + info.version);
+    fs::path stage_dir = settings.cache / "stage" / (info.name + "-" + info.version);
 
     output::stage("Staging " + info.name + "-" + info.version);
-    if (!stage_source(info, source_dir, stage_dir)) {
+    if (!stage_source(info, source_dir, stage_dir, settings)) {
         output::error("Installation staging failed.");
         return false;
     }
-    output::info("Files staged successfully.");
+    output::success("Files staged");
 
     output::stage("Deploying " + info.name + "-" + info.version);
 
@@ -222,6 +221,6 @@ bool install_package(const string &package, const string &expected_version,
         return false;
     }
 
-    output::info("Package installed successfully.");
+    output::success("Installed " + info.name + "-" + info.version);
     return true;
 }
