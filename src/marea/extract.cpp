@@ -164,7 +164,7 @@ bool extract_source(const string &archive_path, const string &name, const string
     // Important flags for safe extraction
     flags |= ARCHIVE_EXTRACT_TIME;
     flags |= ARCHIVE_EXTRACT_SECURE_NODOTDOT;
-    flags |= ARCHIVE_EXTRACT_SECURE_NOABSOLUTEPATHS;
+    // flags |= ARCHIVE_EXTRACT_SECURE_NOABSOLUTEPATHS;
     flags |= ARCHIVE_EXTRACT_SECURE_SYMLINKS;
     flags |= ARCHIVE_EXTRACT_NO_OVERWRITE;
 

@@ -117,7 +117,7 @@ int main(int argc, char *argv[]) {
     }
 
     if (command == "apply") {
-        auto config = parse_daycare("examples/daycare.toml");
+        auto config = parse_daycare("/home/sourcemaster/.config/synnical/daycare.toml");
 
         if (!config) {
             return 1;
