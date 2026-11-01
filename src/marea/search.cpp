@@ -10,8 +10,8 @@
 
 namespace fs = std::filesystem;
 
-bool search_packages(const std::string &query) {
-    fs::path index_path = ".cache/repos/main/index.toml";
+bool search_packages(const std::string &query, const Settings &settings) {
+    fs::path index_path = settings.cache / "repos/main/index.toml";
 
     if (!fs::is_regular_file(index_path)) {
         output::error("Repository index missing, Run synnical --sync first.");
@@ -73,7 +73,7 @@ bool search_packages(const std::string &query) {
         output::info(package);
     }
 
-    output::info("Found " + std::to_string(matches.size()) + " package(s)");
+    output::success("Found " + std::to_string(matches.size()) + " package(s)");
     return true;
 }
 
