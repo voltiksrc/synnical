@@ -2,7 +2,6 @@
 #include <string>
 #include <string_view>
 
-#include "../config/settings.hpp"
 #include "../general/output.hpp"
 #include "parser.hpp"
 
