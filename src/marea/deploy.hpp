@@ -13,7 +13,8 @@ struct Deployment {
 bool install_staged_files(
     const fs::path &stage_dir,
     const fs::path &target_root,
-    Deployment &deployment
+    Deployment &deployment,
+    bool verbose = false
 );
 
 bool rollback_deployment(
