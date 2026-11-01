@@ -155,8 +155,8 @@ bool move_file(const fs::path &from, const fs::path &to) {
 
 } // namespace
 
-bool sync_repositories() {
-    const fs::path repo_dir = ".cache/repos/main";
+bool sync_repositories(const Settings &settings) {
+    const fs::path repo_dir = settings.cache / "repos/main";
 
     const fs::path index_path = repo_dir / "index.toml";
     const fs::path solv_path = repo_dir / "packages.solv";
@@ -246,6 +246,6 @@ bool sync_repositories() {
     fs::remove(index_backup, ec);
     fs::remove(solv_backup, ec);
 
-    output::info("Repositories synced!");
+    output::success("Repositories synced");
     return true;
 }
