@@ -34,6 +34,17 @@ bool validate_settings(const Settings &settings) {
         output::error("Installation root must be inside " + safe_base.string());
         return false;
     }
+    // Reject symlinked paths before creating database or package files.
+    std::filesystem::path walked;
+    for (const auto &part : root) {
+        walked /= part;
+        std::error_code ec;
+        if (std::filesystem::is_symlink(std::filesystem::symlink_status(walked, ec))) {
+            output::error("Installation root cannot use symlinked directories.");
+            return false;
+        }
+    }
+
     if (!settings.cache.is_absolute()) {
         output::error("Cache directory must be an absolute path.");
         return false;
