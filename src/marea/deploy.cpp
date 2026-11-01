@@ -265,7 +265,7 @@ bool rollback_deployment(const fs::path &target_root, const Deployment &deployme
 }
 
 bool install_staged_files(const fs::path &stage_dir, const fs::path &target_root,
-                          Deployment &deployment) {
+                          Deployment &deployment, bool verbose) {
     deployment.files.clear();
     deployment.directories.clear();
 
@@ -384,12 +384,12 @@ bool install_staged_files(const fs::path &stage_dir, const fs::path &target_root
                 break;
             }
 
-            if (entry.type != fs::file_type::directory)
+            if (verbose && entry.type != fs::file_type::directory)
                 output::info("Installed " + entry.relative.string());
         }
 
         if (completed) {
-            output::info("Merged files into root successfully");
+            output::success("Files deployed");
             return true;
         }
     } catch (const std::exception &error) {
