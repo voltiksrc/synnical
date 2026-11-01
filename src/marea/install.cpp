@@ -133,7 +133,7 @@ bool install_package(const string &package, const string &expected_version,
     // SHA256 call
     output::stage("Verifying SHA-256");
 
-    if (!verify_sha256(archive, info.sha256)) {
+    if (!verify_sha256(archive, info.sha256, settings.verbose)) {
         return false;
     }
 
