@@ -10,11 +10,11 @@
 #include "config/daycare.hpp"
 #include "config/settings.hpp"
 #include "general/output.hpp"
-#include "marea/database.hpp"
-#include "marea/install.hpp"
-#include "marea/remove.hpp"
-#include "marea/search.hpp"
-#include "marea/solver.hpp"
+#include "core/database.hpp"
+#include "core/install.hpp"
+#include "core/remove.hpp"
+#include "core/search.hpp"
+#include "core/solver.hpp"
 #include "repository/sync.hpp"
 
 using std::string;
@@ -68,6 +68,8 @@ int main(int argc, char *argv[]) {
     }
 
     // CLI flags override the INI configuration.
+    settings.resume = parsed->resume;
+
     if (parsed->verbose)
         settings.verbose = true;
 

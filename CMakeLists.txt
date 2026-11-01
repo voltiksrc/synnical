@@ -17,30 +17,31 @@ pkg_check_modules(SODIUM REQUIRED IMPORTED_TARGET libsodium)
 pkg_check_modules(INIReader REQUIRED IMPORTED_TARGET INIReader)
 
 add_executable(synnical
-    src/main.cpp
-    src/repository/recipe.cpp
-    src/marea/download.cpp
-    src/marea/sha256.cpp
-    src/marea/extract.cpp
-    src/marea/build.cpp
-    src/marea/install.cpp
-    src/marea/stage.cpp
-    src/system/process.cpp
-    src/repository/sync.cpp
-    src/marea/database.cpp
-    src/marea/deploy.cpp
-    src/marea/search.cpp
-    src/marea/remove.cpp
-    src/marea/solver.cpp
-    src/config/daycare.cpp
-    src/config/timezone.cpp
-    src/cli/parser.cpp
-    src/config/settings.cpp
+    src/main.cxx
+    src/repository/recipe.cxx
+    src/core/download.cxx
+    src/core/sha256.cxx
+    src/core/extract.cxx
+    src/core/build.cxx
+    src/core/install.cxx
+    src/core/stage.cxx
+    src/system/process.cxx
+    src/repository/sync.cxx
+    src/core/database.cxx
+    src/core/deploy.cxx
+    src/core/search.cxx
+    src/core/remove.cxx
+    src/core/solver.cxx
+    src/config/daycare.cxx
+    src/config/timezone.cxx
+    src/cli/parser.cxx
+    src/system/build_output.cxx
+    src/config/settings.cxx
 )
 
 target_include_directories(synnical PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/marea
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/core
     ${CMAKE_CURRENT_SOURCE_DIR}/src/repository
     ${CMAKE_CURRENT_SOURCE_DIR}/src/general
     ${CMAKE_CURRENT_SOURCE_DIR}/src/system
@@ -59,7 +60,7 @@ target_link_libraries(synnical PRIVATE
 )
 
 add_executable(solv-generator
-    tools/generate_solv.cpp
+    tools/generate_solv.cxx
 )
 
 add_custom_target(generate-solv

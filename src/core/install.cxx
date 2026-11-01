@@ -4,15 +4,15 @@
 #include <vector>
 
 #include "../general/output.hpp"
-#include "../marea/build.hpp"
-#include "../marea/database.hpp"
-#include "../marea/deploy.hpp"
-#include "../marea/download.hpp"
-#include "../marea/extract.hpp"
-#include "../marea/install.hpp"
-#include "../marea/sha256.hpp"
-#include "../marea/solver.hpp"
-#include "../marea/stage.hpp"
+#include "../core/build.hpp"
+#include "../core/database.hpp"
+#include "../core/deploy.hpp"
+#include "../core/download.hpp"
+#include "../core/extract.hpp"
+#include "../core/install.hpp"
+#include "../core/sha256.hpp"
+#include "../core/solver.hpp"
+#include "../core/stage.hpp"
 #include "../repository/recipe.hpp"
 
 using std::string;

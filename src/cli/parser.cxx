@@ -1,8 +1,8 @@
-
 #include <optional>
 #include <string>
 #include <string_view>
 
+#include "../config/settings.hpp"
 #include "../general/output.hpp"
 #include "parser.hpp"
 
@@ -18,6 +18,11 @@ std::optional<Arguments> parse_arguments(int argc, char *argv[]) {
 
         if (arg == "--verbose") {
             arguments.verbose = true;
+            continue;
+        }
+
+        if (arg == "--resume") {
+            arguments.resume = true;
             continue;
         }
 
@@ -48,7 +53,6 @@ std::optional<Arguments> parse_arguments(int argc, char *argv[]) {
         // Reject additional command flags.
         if (arg == "-Fetch" || arg == "-fetch" || arg == "--help" || arg == "-h" ||
             arg == "--version" || arg == "--ver" || arg == "--sync" || arg == "--list-installed") {
-
             output::error("Multiple commands specified.");
             return nullopt;
         }
@@ -61,8 +65,17 @@ std::optional<Arguments> parse_arguments(int argc, char *argv[]) {
         return nullopt;
     }
 
+    if (arguments.command == "apply") {
+        arguments.resume = true;
+    }
+
     const string &command = arguments.command;
     const auto count = arguments.positionals.size();
+
+    if (arguments.resume && command != "apply" && command != "-Fetch" && command != "-fetch") {
+        output::error("--resume is only supported with -Fetch and apply.");
+        return nullopt;
+    }
 
     // Commands requiring one or more packages.
     if (command == "-Fetch" || command == "-fetch" || command == "remove" || command == "rm") {

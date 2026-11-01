@@ -18,6 +18,9 @@ struct Settings {
     unsigned int build_jobs = 4;
     bool show_build_output = false;
 
+    // Build resuming
+    bool resume = false;
+
     // Downloading
     bool show_progress = true;
     std::string progress_style = "trail";

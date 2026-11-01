@@ -61,16 +61,16 @@ bool build_source(const Package &info, const fs::path &source_dir, const Setting
 
     const fs::path usr = settings.root / "usr";
     const auto build_env = make_build_environment(settings);
-    const bool show_output = settings.verbose || settings.show_build_output;
+    const auto mode = settings.verbose || settings.show_build_output
+                          ? ProcessOutput::Full : ProcessOutput::Filtered;
     const string jobs = std::to_string(settings.build_jobs);
 
     output::info("Build system: " + info.build_system);
 
-    // Quiet builds keep their output in a temporary log. The process runner
-    // shows that log if a command fails, so compiler errors aren't lost.
+    // Show compiler activity live; keep the complete log for failures.
     auto run = [&](const vector<string> &args, const string &step) -> bool {
         output::info(step);
-        if (run_command(args, source_dir, build_env, show_output) == 0)
+        if (run_command(args, source_dir, build_env, mode) == 0)
             return true;
 
         output::error("Failed to " + step + " for " + info.name + ".");

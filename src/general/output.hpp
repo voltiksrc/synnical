@@ -21,6 +21,8 @@ inline constexpr std::string_view yellow = "\033[33m";
 inline constexpr std::string_view green = "\033[32m";
 inline constexpr std::string_view red = "\033[31m";
 inline constexpr std::string_view reset = "\033[0m";
+inline constexpr std::string_view blue = "\033[34m";
+inline constexpr std::string_view purple = "\033[35m";
 } // namespace color
 
 inline bool use_color(std::ostream &stream) {
