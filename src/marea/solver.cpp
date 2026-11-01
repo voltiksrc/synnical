@@ -203,7 +203,7 @@ bool solve_install_plan(const std::vector<std::string> &requested,
     }
 
     try {
-        output::stage("Resolving dependencies...");
+        output::stage("Resolving dependencies");
         std::unique_ptr<Pool, decltype(&pool_free)> pool(pool_create(), pool_free);
         if (!pool) {
             output::error("Failed to create solver pool.");
@@ -398,7 +398,7 @@ bool solve_install_plan(const std::vector<std::string> &requested,
         }
 
         if (ordered.empty()) {
-            output::info("All requested packages are already satisfied.");
+            output::success("All requested packages are already satisfied");
             return true;
         }
 
