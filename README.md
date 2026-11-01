@@ -38,6 +38,8 @@ install = [
     "fish"
 ]
 
+# Eventually:
+
 # Example user
 [users.alice]
 shell = "/usr/bin/fish"
@@ -54,7 +56,7 @@ synnical apply
 
 Daycare currently supports parsing packages and system settings, with timezone option working.
 
-**More information:** [Daycare documentation](documentation/daycare.md)
+**More information:** [Daycare documentation](doc/daycare.md)
 
 ## Package management
 
@@ -111,14 +113,14 @@ synnical apply
 
 ## Building
 
-Synnical uses **CMake** and requires a C++23 compatible compiler.
+Synnical uses **XMake** and requires a C++23 compatible compiler.
 
 ### Dependencies
 
 The main development dependencies are:
 
 - C++23 compiler
-- CMake
+- XMake
 - libcurl
 - libarchive
 - toml++
@@ -126,9 +128,11 @@ The main development dependencies are:
 - libsolv and libsolvext
 - libsodium
 - pkg-config
-- GNU Make
+- INIReader
 
-Additional build tools such as Ninja, Cargo, Waf, and Go, may be needed depending on what packages you attempt to install.
+Highly recommended build tools: Ninja, GNU Make, Cargo, CMake, Meson.
+
+Additional build tools such as Waf and Go may be needed depending on what packages you attempt to install.
 
 ### Compile from source
 
@@ -139,11 +143,16 @@ git clone https://github.com/voltiksrc/synnical.git
 cd synnical
 ```
 
-Configure and compile:
+Configure release mode:
 
 ```bash
-cmake -S . -B build
-cmake --build build -j4
+xmake f -m release
+```
+
+Compile Synnical
+
+```bash
+xmake
 ```
 
 ### Installation
@@ -153,12 +162,6 @@ An experimental installation script is included:
 ```bash
 chmod +x install.sh
 ./install.sh
-```
-
-Alternatively, after compiling:
-
-```bash
-sudo cmake --install build
 ```
 
 > [!WARNING]
@@ -192,9 +195,20 @@ build_requires = []
 
 The repository is still growing! with a goal of **100 packages**.
 
+## Metadata
+
+I use two helper tools to generate repository metadata:
+
+- [index-generator](tools/generate_index.cxx) — Scans package recipes and automatically generates `index.toml`.
+- [solv-generator](tools/generate_solv.cxx) — Generates `packages.solv`, which Synnical uses for dependency resolution.
+
+I also made a Fish function called `synnupdate` that runs both tools, commits and pushes repository changes, and syncs Synnical's local repository cache.
+
+This saves me from manually editing the index and regenerating the metadata every time I add a package.
+
 ## Development status
 
-Synnical is actively being developed, and several features are still incomplete unfortunately. But thats okay! More features have yet to come but expect some more soon.
+Synnical is actively being developed, and several features are still incomplete unfortunately. But thats okay! More features have yet to come but expect more soon.
 
 **Working/tested**
 
