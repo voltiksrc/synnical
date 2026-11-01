@@ -1,4 +1,3 @@
-#include "../general/paths.hpp"
 
 #include <filesystem>
 #include <string>
@@ -11,8 +10,8 @@
 
 namespace fs = std::filesystem;
 
-bool remove_package(const std::string &name) {
-    const fs::path root = paths::root();
+bool remove_package(const std::string &name, const Settings &settings) {
+    const fs::path root = settings.root;
     const fs::path database_path = root / "var/lib/synnical/installed.db";
 
     if (!fs::is_regular_file(database_path)) {
@@ -105,7 +104,8 @@ bool remove_package(const std::string &name) {
             return false;
         }
 
-        output::info("Removed " + target.string());
+        if (settings.verbose)
+            output::info("Removed " + target.string());
     }
 
     if (!db.remove_installation(name)) {
@@ -113,7 +113,7 @@ bool remove_package(const std::string &name) {
         return false;
     }
 
-    output::info("Package removed successfully");
+    output::success("Removed " + name);
     return true;
 }
 
