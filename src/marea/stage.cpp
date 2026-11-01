@@ -6,8 +6,9 @@
 #include "stage.hpp"
 
 bool stage_source(const Package &info, const std::filesystem::path &source_dir,
-                  const std::filesystem::path &stage_dir) {
+                  const std::filesystem::path &stage_dir, const Settings &settings) {
     namespace fs = std::filesystem;
+    const bool show_output = settings.verbose || settings.show_build_output;
 
     // Make DESTDIR absolute before passing it to the build system.
     fs::path absolute_path = fs::absolute(stage_dir);
@@ -21,19 +22,19 @@ bool stage_source(const Package &info, const std::filesystem::path &source_dir,
     if (info.build_system == "make") {
         if (run_command({"make", "install", "PREFIX=" + (absolute_path / "usr").string()},
                         source_dir,
-                        {destdir}) != 0) {
+                        {destdir}, show_output) != 0) {
             output::error("Failed to stage Make files.");
             return false;
         }
 
     } else if (info.build_system == "meson") {
-        if (run_command({"meson", "install", "-C", "build"}, source_dir, {destdir}) != 0) {
+        if (run_command({"meson", "install", "-C", "build"}, source_dir, {destdir}, show_output) != 0) {
             output::error("Failed to stage Meson files.");
             return false;
         }
 
     } else if (info.build_system == "cmake") {
-        if (run_command({"cmake", "--install", "build"}, source_dir, {destdir}) != 0) {
+        if (run_command({"cmake", "--install", "build"}, source_dir, {destdir}, show_output) != 0) {
             output::error("Failed to stage CMake files.");
             return false;
         }
@@ -54,11 +55,11 @@ bool stage_source(const Package &info, const std::filesystem::path &source_dir,
                         fs::perms::owner_exec | fs::perms::group_exec | fs::perms::others_exec,
                         fs::perm_options::add);
 
-        output::stage("Staged Cargo executable: " + info.name);
+        output::info("Staged Cargo executable: " + info.name);
 
     } else if (info.build_system == "waf") {
         // Install into our staging directory instead of real root.
-        if (run_command({"./waf", "install", "--destdir=" + absolute_path.string()}, source_dir) !=
+        if (run_command({"./waf", "install", "--destdir=" + absolute_path.string()}, source_dir, {}, show_output) !=
             0) {
             output::error("Failed to stage Waf files.");
             return false;
@@ -83,13 +84,19 @@ bool stage_source(const Package &info, const std::filesystem::path &source_dir,
         output::info("Go executable staged successfully");
     } else if (info.build_system == "openssl") {
         // OpenSSL custom make install command
-        if (run_command({"make", "install_sw", "DESTDIR=" + absolute_path.string()}, source_dir) !=
+        if (run_command({"make", "install_sw", "DESTDIR=" + absolute_path.string()}, source_dir, {}, show_output) !=
             0) {
             output::error("Failed to stage OpenSSL files.");
             return false;
         }
+    } else if (info.build_system == "perl") {
+        if (run_command({"make", "install", "DESTDIR=" + absolute_path.string()},
+                        source_dir, {}, show_output) != 0) {
+            output::error("Failed to stage Perl files.");
+            return false;
+        }
     } else if (info.build_system == "rust-bootstrap") {
-        if (run_command({"./x.py", "install"}, source_dir, {destdir}) != 0) {
+        if (run_command({"./x.py", "install"}, source_dir, {destdir}, show_output) != 0) {
             return false;
         }
     } else {
