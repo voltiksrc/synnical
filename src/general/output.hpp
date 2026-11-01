@@ -63,6 +63,11 @@ inline void info(std::string_view message) {
     print(std::cout, "   ", message);
 }
 
+// Extra details stay plain, so the important statuses stand out.
+inline void detail(std::string_view message) {
+    print(std::cout, "   ", message);
+}
+
 inline void success(std::string_view message) {
     print(std::cout, "✓ ", message, color::green);
 }
