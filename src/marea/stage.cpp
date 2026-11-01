@@ -20,7 +20,7 @@ bool stage_source(const Package &info, const std::filesystem::path &source_dir,
     std::string destdir = "DESTDIR=" + absolute_path.string();
 
     if (info.build_system == "make") {
-        if (run_command({"make", "install", "PREFIX=" + (absolute_path / "usr").string()},
+        if (run_command({"make", "install"},
                         source_dir,
                         {destdir}, show_output) != 0) {
             output::error("Failed to stage Make files.");
@@ -81,7 +81,7 @@ bool stage_source(const Package &info, const std::filesystem::path &source_dir,
 
         fs::copy_file(binary, destination, fs::copy_options::overwrite_existing);
 
-        output::info("Go executable staged successfully");
+        output::info("Staged Go executable: " + info.name);
     } else if (info.build_system == "openssl") {
         // OpenSSL custom make install command
         if (run_command({"make", "install_sw", "DESTDIR=" + absolute_path.string()}, source_dir, {}, show_output) !=
