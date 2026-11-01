@@ -189,7 +189,7 @@ bool extract_source(const string &archive_path, const string &name, const string
     }
 
     if (fs::exists(status)) {
-        output::stage("Cleaning previous build directory...");
+        output::info("Cleaning previous build directory");
 
         fs::remove_all(builddir, ec);
 
@@ -370,6 +370,6 @@ bool extract_source(const string &archive_path, const string &name, const string
         return false;
     }
 
-    output::info("Extraction completed successfully.");
+    output::success("Sources extracted");
     return true;
 }
