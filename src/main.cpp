@@ -1,4 +1,3 @@
-#include "general/paths.hpp"
 #include <exception>
 #include <filesystem>
 #include <iostream>
@@ -74,7 +73,6 @@ int main(int argc, char *argv[]) {
 
     const auto &command = parsed->command;
     const auto &positionals = parsed->positionals;
-    bool verbose = parsed->verbose;
 
     if (command == "-h" || command == "--help") {
         show_help();
@@ -92,11 +90,11 @@ int main(int argc, char *argv[]) {
     }
 
     if (command == "--sync") {
-        return sync_repositories() ? 0 : 1;
+        return sync_repositories(settings) ? 0 : 1;
     }
 
     if (command == "--list-installed") {
-        const auto dblocation = paths::database();
+        const auto dblocation = settings.root / "var/lib/synnical/installed.db";
 
         if (!std::filesystem::exists(dblocation)) {
             output::error("Database does not exist.");
@@ -126,11 +124,11 @@ int main(int argc, char *argv[]) {
         }
 
         // Install requested packages first. Never change the target host OS.
-        if (!config->packages.empty() && !install_requested(config->packages)) {
+        if (!config->packages.empty() && !install_requested(config->packages, settings)) {
             return 1;
         }
 
-        if (!apply_timezone(config->timezone, paths::root().string())) {
+        if (!apply_timezone(config->timezone, settings.root.string())) {
             return 1;
         }
 
@@ -143,7 +141,7 @@ int main(int argc, char *argv[]) {
 
     if (command == "remove" || command == "rm") {
         for (const auto &package : positionals) {
-            if (!remove_package(package))
+            if (!remove_package(package, settings))
                 return 1;
         }
 
@@ -151,11 +149,11 @@ int main(int argc, char *argv[]) {
     }
 
     if (command == "search") {
-        return search_packages(positionals[0]) ? 0 : 1;
+        return search_packages(positionals[0], settings) ? 0 : 1;
     }
 
     if (command == "resolve") {
-        return resolve_package(positionals[0]) ? 0 : 1;
+        return resolve_package(positionals[0], settings) ? 0 : 1;
     }
 
     output::error("Unknown command: " + command);
