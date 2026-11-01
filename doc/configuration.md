@@ -30,22 +30,24 @@ It currently does not support more than one progress bar/style, but I will add m
 
 #### General section
 `[general]`, the general section is the main section which holds two options: `color`, and `verbose`. 
-which handles whether you want colors or not, and if you want full compiler output, if you decide to not turn on verbose than
+which handles whether you want colors or not, and if you want full compiler output, if you decide to not turn on verbose then
 you will get the filtered output. The filtered output tends to be a lot nicer if you don't
 want your terminal being flooded with build and configure output. This option is a bool which means `true` or `false`.
+`color` has 3 options, `always`, `never`, and `auto`. Auto enables colors when output is connected 
+to a terminal and disables them otherwise.
 
 #### Build section
 The `[build]` section holds the `jobs` option, the jobs option holds the amount of jobs used in compilation.
-If you dont know what jobs are, jobs determine how many processors the cpu uses to compile
-something. The higher the jobs the faster the compilation, but that comes at the cost of
+If you don't know what jobs are, jobs determine how many compilation tasks can run at the same time.
+The higher the jobs the faster the compilation, but that comes at the cost of
 higher and louder fan speeds. The build section also holds the `show_output` option, this
-option determines whether or not you want any build or configure output. It is also a bool
-aka `true` or `false`.
+option determines whether or not you want any build or configure output. Verbose enables detailed
+debug/diagnostic output, as show_output determines whether there is any at all.
+It is also a bool, aka `true` or `false`.
 
 #### Download section
 The `[download]` section holds two settings, `progress` and `style`. The progress setting
 is a bool, it decides whether or not Synnical shows the download bar and progress of downloading. 
-The `style` setting decides the progress bar style, there is 2 options currently, trail and hash. 
-The default option is trail which uses a unicode bar and arrow. And hash is a bar made of hashtags such as: [#################]. 
-
+The `style` setting decides the progress bar style, Currently, only `trail` is supported. I plan to add `hash` later. 
+The default option is trail which uses a unicode bar and arrow. And hash will be a bar made of hashtags such as: [#################]. 
 That is all the configuration options that our ini configuration file holds.
