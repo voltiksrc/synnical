@@ -26,6 +26,7 @@ struct Progress {
     curl_off_t downloaded = 0;
     curl_off_t total = 0;
     bool visible = false;
+    bool enabled = true;
 
     std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
     std::chrono::steady_clock::time_point last_update{};
@@ -64,7 +65,7 @@ int progress_callback(void *clientp, curl_off_t dltotal, curl_off_t dlnow, curl_
     progress->total = dltotal;
 
     // Don't draw progress bars when output isn't a terminal.
-    if (!isatty(STDOUT_FILENO))
+    if (!progress->enabled || !isatty(STDOUT_FILENO))
         return 0;
 
     int columns = terminal_width();
@@ -159,7 +160,7 @@ int progress_callback(void *clientp, curl_off_t dltotal, curl_off_t dlnow, curl_
     // Linux TTY fonts might not support the Unicode symbols.
     const char *term = std::getenv("TERM");
     bool ascii = term && std::string_view(term) == "linux";
-    bool color = std::getenv("NO_COLOR") == nullptr && term && std::string_view(term) != "dumb";
+    bool color = output::use_color(std::cout);
 
     constexpr std::string_view green = "\033[32m";
     constexpr std::string_view dim = "\033[90m";
@@ -226,7 +227,8 @@ static size_t write_callback(char *ptr, size_t size, size_t nmemb, void *userdat
     return total;
 }
 
-string download_source(const string &source_url, const string &name, const string &version) {
+string download_source(const string &source_url, const string &name, const string &version,
+                       const Settings &settings) {
     // Initialize libcurl so we can download and write data
     // using its functions.
     CURL *curl = curl_easy_init();
@@ -245,10 +247,11 @@ string download_source(const string &source_url, const string &name, const strin
         }
     }
 
-    string output_path = ".cache/tbdownload/" + name + "-" + version + extension;
+    const std::filesystem::path download_dir = settings.cache / "tbdownload";
+    string output_path = (download_dir / (name + "-" + version + extension)).string();
 
     // Create .cache/tarballdownload so it never fails to Download the tarballs.
-    std::filesystem::create_directories(".cache/tbdownload");
+    std::filesystem::create_directories(download_dir);
 
     std::ofstream file(output_path, std::ios::binary);
     if (!file) {
@@ -274,6 +277,7 @@ string download_source(const string &source_url, const string &name, const strin
 
     // Enable progress tracking
     Progress progress{};
+    progress.enabled = settings.show_progress;
     curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, progress_callback);
 
     curl_easy_setopt(curl, CURLOPT_XFERINFODATA, &progress);
