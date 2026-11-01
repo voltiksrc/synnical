@@ -1,4 +1,3 @@
-#include "../general/paths.hpp"
 #include <algorithm>
 #include <cstdio>
 #include <filesystem>
@@ -30,8 +29,6 @@ namespace fs = std::filesystem;
 
 namespace {
 
-constexpr const char *metadata_path = ".cache/repos/main/packages.solv";
-const std::string database_path = paths::database().string();
 constexpr const char *build_key_name = "synnical:buildrequires";
 
 // A libsolv Queue needs queue_free, even when we return early.
@@ -91,7 +88,8 @@ bool load_available_repo(Repo *repo, const fs::path &path) {
     return true;
 }
 
-bool load_installed_repo(Pool *pool, Repo *repo, std::map<std::string, std::string> &versions) {
+bool load_installed_repo(Pool *pool, Repo *repo, std::map<std::string, std::string> &versions,
+                         const fs::path &database_path) {
     if (!fs::exists(database_path)) {
         repo_internalize(repo);
         return true;
@@ -192,7 +190,8 @@ bool report_solver_problems(Solver *solver) {
 } // namespace
 
 bool solve_install_plan(const std::vector<std::string> &requested,
-                        std::vector<PlannedPackage> &plan) {
+                        std::vector<PlannedPackage> &plan, const Settings &settings) {
+    const fs::path metadata_path = settings.cache / "repos/main/packages.solv";
     plan.clear();
     if (!fs::is_regular_file(metadata_path)) {
         output::error("Repository metadata missing. Run synnical --sync first.");
@@ -222,7 +221,8 @@ bool solve_install_plan(const std::vector<std::string> &requested,
             return false;
 
         std::map<std::string, std::string> installed_versions;
-        if (!load_installed_repo(pool.get(), installed, installed_versions))
+        if (!load_installed_repo(pool.get(), installed, installed_versions,
+                                 settings.root / "var/lib/synnical/installed.db"))
             return false;
 
         pool_set_installed(pool.get(), installed);
@@ -416,7 +416,7 @@ bool solve_install_plan(const std::vector<std::string> &requested,
     }
 }
 
-bool resolve_package(const std::string &name) {
+bool resolve_package(const std::string &name, const Settings &settings) {
     std::vector<PlannedPackage> plan;
-    return solve_install_plan({name}, plan);
+    return solve_install_plan({name}, plan, settings);
 }
