@@ -1,3 +1,4 @@
+#include "../general/paths.hpp"
 
 #include <filesystem>
 #include <string>
@@ -11,7 +12,7 @@
 namespace fs = std::filesystem;
 
 bool remove_package(const std::string &name) {
-    const fs::path root = "/tmp/synnical-test-root";
+    const fs::path root = paths::root();
     const fs::path database_path = root / "var/lib/synnical/installed.db";
 
     if (!fs::is_regular_file(database_path)) {

@@ -18,26 +18,27 @@ pkg_check_modules(SODIUM REQUIRED IMPORTED_TARGET libsodium)
 add_executable(synnical
     src/main.cpp
     src/repository/recipe.cpp
-    src/packages/download.cpp
-    src/packages/sha256.cpp
-    src/packages/extract.cpp
-    src/packages/build.cpp
-    src/packages/install.cpp
-    src/packages/stage.cpp
+    src/marea/download.cpp
+    src/marea/sha256.cpp
+    src/marea/extract.cpp
+    src/marea/build.cpp
+    src/marea/install.cpp
+    src/marea/stage.cpp
     src/system/process.cpp
     src/repository/sync.cpp
-    src/packages/database.cpp
-    src/packages/deploy.cpp
-    src/packages/search.cpp
-    src/packages/remove.cpp
-    src/packages/solver.cpp
+    src/marea/database.cpp
+    src/marea/deploy.cpp
+    src/marea/search.cpp
+    src/marea/remove.cpp
+    src/marea/solver.cpp
     src/config/daycare.cpp
     src/config/timezone.cpp
+    src/cli/parser.cpp
 )
 
 target_include_directories(synnical PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/packages
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/marea
     ${CMAKE_CURRENT_SOURCE_DIR}/src/repository
     ${CMAKE_CURRENT_SOURCE_DIR}/src/general
     ${CMAKE_CURRENT_SOURCE_DIR}/src/system

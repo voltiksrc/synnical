@@ -1,11 +1,12 @@
-#include <filesystem>
+#include "../general/paths.hpp"
 #include <cstdlib>
+#include <filesystem>
 #include <string>
 #include <vector>
 
-#include "build.hpp"
-#include "output.hpp"
-#include "process.hpp"
+#include "../general/output.hpp"
+#include "../marea/build.hpp"
+#include "../system/process.hpp"
 
 using std::string;
 using std::vector;
@@ -14,22 +15,22 @@ std::vector<std::string> make_build_environment() {
     namespace fs = std::filesystem;
 
     // Synnical's test installation root. Eventually this should be configurable.
-    const fs::path usr = "/tmp/synnical-test-root/usr";
+    const fs::path usr = paths::usr();
     const string include = (usr / "include").string();
     const string lib = (usr / "lib").string();
     const string lib64 = (usr / "lib64").string();
 
-    auto existing = [](const char* name) -> string {
-        const char* value = std::getenv(name);
+    auto existing = [](const char *name) -> string {
+        const char *value = std::getenv(name);
         return value ? value : "";
     };
 
-    auto flags = [&](const string& name, const string& extra) -> string {
+    auto flags = [&](const string &name, const string &extra) -> string {
         const string old = existing(name.c_str());
         return name + "=" + extra + (old.empty() ? "" : " " + old);
     };
 
-    auto paths = [&](const string& name, const string& extra) -> string {
+    auto paths = [&](const string &name, const string &extra) -> string {
         const string old = existing(name.c_str());
         return name + "=" + extra + (old.empty() ? "" : ":" + old);
     };
@@ -41,8 +42,8 @@ std::vector<std::string> make_build_environment() {
         flags("CFLAGS", "-I" + include),
         flags("CXXFLAGS", "-I" + include),
         flags("LDFLAGS", "-L" + lib + " -L" + lib64),
-        paths("PKG_CONFIG_PATH", lib + "/pkgconfig:" + lib64 + "/pkgconfig:" +
-             (usr / "share/pkgconfig").string()),
+        paths("PKG_CONFIG_PATH",
+              lib + "/pkgconfig:" + lib64 + "/pkgconfig:" + (usr / "share/pkgconfig").string()),
         paths("CMAKE_PREFIX_PATH", usr.string()),
         paths("PATH", (usr / "bin").string()),
         flags("CGO_CPPFLAGS", "-I" + include),
@@ -54,7 +55,7 @@ std::vector<std::string> make_build_environment() {
 bool build_source(const Package &info, const std::filesystem::path &source_dir) {
     namespace fs = std::filesystem;
     const auto build_env = make_build_environment();
-    const fs::path usr = "/tmp/synnical-test-root/usr";
+    const fs::path usr = paths::usr();
 
     output::info("Build system: " + info.build_system);
 
@@ -80,8 +81,10 @@ bool build_source(const Package &info, const std::filesystem::path &source_dir) 
         const string pkg_dirs = (usr / "lib/pkgconfig").string() + ":" +
                                 (usr / "lib64/pkgconfig").string() + ":" +
                                 (usr / "share/pkgconfig").string();
-        if (run_command({"meson", "setup", "build", "--prefix=/usr",
-                         "--pkg-config-path=" + pkg_dirs}, source_dir, build_env) != 0) {
+        if (run_command(
+                {"meson", "setup", "build", "--prefix=/usr", "--pkg-config-path=" + pkg_dirs},
+                source_dir,
+                build_env) != 0) {
             output::error("Meson setup failed. How about you switch to cmake?");
             return false;
         }
@@ -96,11 +99,18 @@ bool build_source(const Package &info, const std::filesystem::path &source_dir) 
     } else if (info.build_system == "cmake") {
         output::info("Configuring with CMake...");
 
-        if (run_command({"cmake", "-S", ".", "-B", "build", "-DCMAKE_INSTALL_PREFIX=/usr",
-                         "-DCMAKE_PREFIX_PATH=" + usr.string(),
-                         "-DCMAKE_INCLUDE_PATH=" + (usr / "include").string(),
-                         "-DCMAKE_LIBRARY_PATH=" + (usr / "lib").string() + ";" + (usr / "lib64").string()},
-                        source_dir, build_env) != 0) {
+        if (run_command(
+                {"cmake",
+                 "-S",
+                 ".",
+                 "-B",
+                 "build",
+                 "-DCMAKE_INSTALL_PREFIX=/usr",
+                 "-DCMAKE_PREFIX_PATH=" + usr.string(),
+                 "-DCMAKE_INCLUDE_PATH=" + (usr / "include").string(),
+                 "-DCMAKE_LIBRARY_PATH=" + (usr / "lib").string() + ";" + (usr / "lib64").string()},
+                source_dir,
+                build_env) != 0) {
             output::error("CMake configure failed, so fix it.");
             return false;
         }
@@ -150,7 +160,8 @@ bool build_source(const Package &info, const std::filesystem::path &source_dir) 
     } else if (info.build_system == "openssl") {
         output::info("Building with openssl backend...");
 
-        if (run_command({"./Configure", "--prefix=/usr", "--libdir=lib"}, source_dir, build_env) != 0) {
+        if (run_command({"./Configure", "--prefix=/usr", "--libdir=lib"}, source_dir, build_env) !=
+            0) {
             return false;
         }
 
@@ -161,7 +172,8 @@ bool build_source(const Package &info, const std::filesystem::path &source_dir) 
     } else if (info.build_system == "rust-bootstrap") {
         output::stage("Bootstrapping Rust toolchain...");
 
-        if (run_command({"./configure", "--set", "install.prefix=/usr"}, source_dir, build_env) != 0) {
+        if (run_command({"./configure", "--set", "install.prefix=/usr"}, source_dir, build_env) !=
+            0) {
             return false;
         }
 

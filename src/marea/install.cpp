@@ -1,3 +1,4 @@
+#include "../general/paths.hpp"
 #include <filesystem>
 #include <string>
 #include <toml++/toml.hpp>
@@ -89,7 +90,7 @@ bool install_package(const string &package, const string &expected_version) {
         return false;
     }
 
-    fs::path target_root = "/tmp/synnical-test-root";
+    fs::path target_root = paths::root();
     fs::path database_path = target_root / "var/lib/synnical/installed.db";
 
     fs::create_directories(database_path.parent_path());

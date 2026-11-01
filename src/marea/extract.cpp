@@ -1,15 +1,13 @@
 #include <archive.h>
 #include <archive_entry.h>
-#include <cerrno>
 #include <fcntl.h>
 #include <filesystem>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <utility>
 #include <vector>
 
+#include "../general/output.hpp"
 #include "extract.hpp"
-#include "output.hpp"
 
 using std::string;
 
@@ -46,6 +44,8 @@ static bool safe_symlink(const std::filesystem::path &relative,
     if (resolved.is_absolute())
         return false;
 
+    // We stop it if it has .. in its location, as we cannot
+    // safely let the symlink go outside the intended area.
     for (const auto &part : resolved) {
         if (part == "..")
             return false;
@@ -161,6 +161,7 @@ bool extract_source(const string &archive_path, const string &name, const string
         return false;
     }
 
+    // Important flags for safe extraction
     flags |= ARCHIVE_EXTRACT_TIME;
     flags |= ARCHIVE_EXTRACT_SECURE_NODOTDOT;
     flags |= ARCHIVE_EXTRACT_SECURE_NOABSOLUTEPATHS;

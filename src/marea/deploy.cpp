@@ -1,3 +1,4 @@
+#include "../general/paths.hpp"
 #include <cerrno>
 #include <exception>
 #include <fcntl.h>
@@ -16,7 +17,7 @@ namespace fs = std::filesystem;
 
 namespace {
 
-constexpr const char *test_root = "/tmp/synnical-test-root";
+const std::string test_root = paths::root().string();
 
 struct Entry {
     fs::path source;
@@ -37,7 +38,9 @@ struct FD {
     FD(const FD &) = delete;
     FD &operator=(const FD &) = delete;
 
-    operator int() const { return value; }
+    operator int() const {
+        return value;
+    }
 };
 
 bool safe_path(const fs::path &path) {
@@ -57,15 +60,14 @@ int open_root(const fs::path &root) {
     if (fs::absolute(root).lexically_normal() != fs::path(test_root))
         return -1;
 
-    if (mkdir(test_root, 0755) != 0 && errno != EEXIST)
+    if (mkdir(test_root.c_str(), 0755) != 0 && errno != EEXIST)
         return -1;
 
-    return open(test_root, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+    return open(test_root.c_str(), O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
 }
 
 // Walk from the root fd so a parent symlink can't redirect us
-int open_parent(int rootfd, const fs::path &path, bool create,
-                Deployment *deployment = nullptr) {
+int open_parent(int rootfd, const fs::path &path, bool create, Deployment *deployment = nullptr) {
     if (!safe_path(path))
         return -1;
 
@@ -88,8 +90,7 @@ int open_parent(int rootfd, const fs::path &path, bool create,
             }
         }
 
-        int next = openat(current, name.c_str(),
-                          O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+        int next = openat(current, name.c_str(), O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
         if (next < 0)
             return -1;
 
@@ -117,15 +118,14 @@ bool copy_regular(const fs::path &source, int parent, const std::string &name,
     if (input.value < 0)
         return false;
 
-    struct stat st {};
+    struct stat st{};
     if (fstat(input, &st) != 0 || !S_ISREG(st.st_mode))
         return false;
 
     inode = {st.st_dev, st.st_ino};
 
-    FD output(openat(parent, name.c_str(),
-                     O_WRONLY | O_CREAT | O_EXCL | O_NOFOLLOW | O_CLOEXEC,
-                     0600));
+    FD output(
+        openat(parent, name.c_str(), O_WRONLY | O_CREAT | O_EXCL | O_NOFOLLOW | O_CLOEXEC, 0600));
     if (output.value < 0)
         return false;
 
@@ -168,7 +168,7 @@ bool check_conflicts(int rootfd, const std::vector<Entry> &entries) {
             return false;
         }
 
-        struct stat st {};
+        struct stat st{};
         const std::string name = entry.relative.filename().string();
         if (fstatat(parent, name.c_str(), &st, AT_SYMLINK_NOFOLLOW) == 0) {
             // Shared directories are okay; existing files aren't
@@ -187,8 +187,7 @@ bool check_conflicts(int rootfd, const std::vector<Entry> &entries) {
 
 } // namespace
 
-bool rollback_deployment(const fs::path &target_root,
-                         const Deployment &deployment) {
+bool rollback_deployment(const fs::path &target_root, const Deployment &deployment) {
     FD root(open_root(target_root));
     if (root.value < 0)
         return false;
@@ -211,7 +210,7 @@ bool rollback_deployment(const fs::path &target_root,
         }
 
         const std::string name = relative.filename().string();
-        struct stat st {};
+        struct stat st{};
         if (fstatat(parent, name.c_str(), &st, AT_SYMLINK_NOFOLLOW) != 0) {
             if (errno != ENOENT)
                 success = false;
@@ -228,8 +227,7 @@ bool rollback_deployment(const fs::path &target_root,
     }
 
     // Only delete directories this deployment created, and only if empty
-    for (auto it = deployment.directories.rbegin();
-         it != deployment.directories.rend(); ++it) {
+    for (auto it = deployment.directories.rbegin(); it != deployment.directories.rend(); ++it) {
         if (!safe_path(*it)) {
             success = false;
             continue;
@@ -281,8 +279,7 @@ bool install_staged_files(const fs::path &stage_dir, const fs::path &target_root
                 return false;
             }
 
-            if (type != fs::file_type::directory &&
-                type != fs::file_type::regular &&
+            if (type != fs::file_type::directory && type != fs::file_type::regular &&
                 type != fs::file_type::symlink) {
                 output::error("Unsupported staged file: " + relative.string());
                 return false;
@@ -325,8 +322,8 @@ bool install_staged_files(const fs::path &stage_dir, const fs::path &target_root
                 }
 
                 if (success) {
-                    FD dir(openat(parent, name.c_str(), O_RDONLY | O_DIRECTORY |
-                                                          O_NOFOLLOW | O_CLOEXEC));
+                    FD dir(openat(
+                        parent, name.c_str(), O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC));
                     success = dir.value >= 0;
                 }
             } else if (entry.type == fs::file_type::symlink) {
@@ -337,7 +334,7 @@ bool install_staged_files(const fs::path &stage_dir, const fs::path &target_root
                         deployment.files.push_back(installed);
                 }
             } else {
-                struct stat st {};
+                struct stat st{};
                 if (lstat(entry.source.c_str(), &st) == 0 && S_ISREG(st.st_mode)) {
                     Inode inode{st.st_dev, st.st_ino};
                     auto previous = hardlinks.find(inode);
@@ -346,19 +343,21 @@ bool install_staged_files(const fs::path &stage_dir, const fs::path &target_root
                         FD original(open_parent(root, previous->second, false));
                         if (original.value >= 0) {
                             const std::string old_name = previous->second.filename().string();
-                            struct stat old_st {};
-                            if (fstatat(original, old_name.c_str(), &old_st,
-                                        AT_SYMLINK_NOFOLLOW) == 0 && S_ISREG(old_st.st_mode)) {
-                                success = linkat(original, old_name.c_str(),
-                                                 parent, name.c_str(), 0) == 0;
+                            struct stat old_st{};
+                            if (fstatat(original, old_name.c_str(), &old_st, AT_SYMLINK_NOFOLLOW) ==
+                                    0 &&
+                                S_ISREG(old_st.st_mode)) {
+                                success =
+                                    linkat(original, old_name.c_str(), parent, name.c_str(), 0) ==
+                                    0;
                                 if (success)
                                     deployment.files.push_back(installed);
                             }
                         }
                     } else {
                         Inode copied_inode{};
-                        success = copy_regular(entry.source, parent, name,
-                                               installed, deployment, copied_inode);
+                        success = copy_regular(
+                            entry.source, parent, name, installed, deployment, copied_inode);
                         if (success)
                             hardlinks.emplace(copied_inode, entry.relative);
                     }

@@ -1,3 +1,4 @@
+#include "../general/paths.hpp"
 #include <algorithm>
 #include <cstdio>
 #include <filesystem>
@@ -21,8 +22,8 @@
 #include <solv/transaction.h>
 #undef requires
 
+#include "../general/output.hpp"
 #include "database.hpp"
-#include "output.hpp"
 #include "solver.hpp"
 
 namespace fs = std::filesystem;
@@ -30,14 +31,18 @@ namespace fs = std::filesystem;
 namespace {
 
 constexpr const char *metadata_path = ".cache/repos/main/packages.solv";
-constexpr const char *database_path = "/tmp/synnical-test-root/var/lib/synnical/installed.db";
+const std::string database_path = paths::database().string();
 constexpr const char *build_key_name = "synnical:buildrequires";
 
 // A libsolv Queue needs queue_free, even when we return early.
 struct SolvQueue {
     Queue value;
-    SolvQueue() { queue_init(&value); }
-    ~SolvQueue() { queue_free(&value); }
+    SolvQueue() {
+        queue_init(&value);
+    }
+    ~SolvQueue() {
+        queue_free(&value);
+    }
     SolvQueue(const SolvQueue &) = delete;
     SolvQueue &operator=(const SolvQueue &) = delete;
 };
@@ -86,8 +91,7 @@ bool load_available_repo(Repo *repo, const fs::path &path) {
     return true;
 }
 
-bool load_installed_repo(Pool *pool, Repo *repo,
-                         std::map<std::string, std::string> &versions) {
+bool load_installed_repo(Pool *pool, Repo *repo, std::map<std::string, std::string> &versions) {
     if (!fs::exists(database_path)) {
         repo_internalize(repo);
         return true;
@@ -147,12 +151,18 @@ Id parse_requirement(Pool *pool, const std::string &text) {
         return 0;
 
     int flags = 0;
-    if (op == ">=") flags = REL_GT | REL_EQ;
-    else if (op == "<=") flags = REL_LT | REL_EQ;
-    else if (op == ">") flags = REL_GT;
-    else if (op == "<") flags = REL_LT;
-    else if (op == "=" || op == "==") flags = REL_EQ;
-    else return 0;
+    if (op == ">=")
+        flags = REL_GT | REL_EQ;
+    else if (op == "<=")
+        flags = REL_LT | REL_EQ;
+    else if (op == ">")
+        flags = REL_GT;
+    else if (op == "<")
+        flags = REL_LT;
+    else if (op == "=" || op == "==")
+        flags = REL_EQ;
+    else
+        return 0;
 
     Id version_id = pool_str2id(pool, version.c_str(), 0);
     if (!version_id)
@@ -231,7 +241,7 @@ bool solve_install_plan(const std::vector<std::string> &requested,
         std::set<std::string> added_build_jobs;
         std::unique_ptr<Solver, decltype(&solver_free)> solver(nullptr, solver_free);
         std::unique_ptr<Transaction, decltype(&transaction_free)> transaction(nullptr,
-                                                                               transaction_free);
+                                                                              transaction_free);
 
         // Keep solving until the new build tools stop bringing in more tools.
         while (true) {
@@ -297,7 +307,8 @@ bool solve_install_plan(const std::vector<std::string> &requested,
                 return false;
             }
             if (installed_versions.contains(pool_id2str(pool.get(), pkg->name))) {
-                output::error("Package already installed with another version: " + name_of(pool.get(), id));
+                output::error("Package already installed with another version: " +
+                              name_of(pool.get(), id));
                 return false;
             }
             pending.insert(id);
@@ -327,9 +338,11 @@ bool solve_install_plan(const std::vector<std::string> &requested,
 
             for (const auto &text : deps) {
                 Id requirement = parse_requirement(pool.get(), text);
-                Id provider = requirement ? selected_provider(pool.get(), requirement, selected) : 0;
+                Id provider =
+                    requirement ? selected_provider(pool.get(), requirement, selected) : 0;
                 if (!provider) {
-                    output::error("No selected provider for " + name + " build requirement: " + text);
+                    output::error("No selected provider for " + name +
+                                  " build requirement: " + text);
                     return false;
                 }
                 if (provider == id) {
@@ -376,7 +389,8 @@ bool solve_install_plan(const std::vector<std::string> &requested,
                 // One entry per package, not spammed once per solver pass.
                 std::string line = name + ": ";
                 for (std::size_t i = 0; i < deps.size(); ++i) {
-                    if (i) line += ", ";
+                    if (i)
+                        line += ", ";
                     line += deps[i];
                 }
                 output::info(line);
@@ -391,8 +405,7 @@ bool solve_install_plan(const std::vector<std::string> &requested,
         output::stage("Installation plan");
         for (Id id : ordered) {
             Solvable *pkg = pool_id2solvable(pool.get(), id);
-            plan.push_back({pool_id2str(pool.get(), pkg->name),
-                            pool_id2str(pool.get(), pkg->evr)});
+            plan.push_back({pool_id2str(pool.get(), pkg->name), pool_id2str(pool.get(), pkg->evr)});
             output::info(plan.back().name + " " + plan.back().version);
         }
         return true;

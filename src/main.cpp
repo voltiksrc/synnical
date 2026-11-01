@@ -1,9 +1,13 @@
+#include "general/paths.hpp"
+#include <exception>
+#include <filesystem>
 #include <iostream>
 #include <sodium.h>
 #include <string>
 #include <string_view>
 #include <vector>
 
+#include "cli/parser.hpp"
 #include "config/daycare.hpp"
 #include "general/output.hpp"
 #include "marea/database.hpp"
@@ -15,7 +19,7 @@
 
 using std::string;
 
-void smversion() {
+void version() {
     constexpr std::string_view version{"1.10"};
     std::cout << "Synnical version " << version << '\n';
 }
@@ -25,16 +29,15 @@ void show_help() {
     std::cout << "Usage: synnical <command> [package...]\n\n";
 
     std::cout << "Commands:\n";
-    std::cout << "  -Fetch <package...> Install packages using command-line\n";
+    std::cout << "  -Fetch <package...> Install packages using command line\n";
     std::cout << "  remove <package>    Remove an installed package\n";
-    std::cout << "  rm <package>        Alias for remove\n";
     std::cout << "  search <query>      Search repositories\n";
     std::cout << "  resolve <package>   Preview package dependencies\n";
     std::cout << "  apply               Apply the daycare configuration\n";
     std::cout << "  --list-installed    List installed packages\n";
     std::cout << "  --sync              Sync repositories\n";
     std::cout << "  --version           Show Synnical's version\n";
-    std::cout << "  --help, -h          Show this menu\n";
+    std::cout << "  --help              Show this menu\n";
 }
 
 int main(int argc, char *argv[]) {
@@ -43,21 +46,29 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    if (sodium_init() < 0) {
-        output::error("Failed to initialize libsodium.");
+    auto parsed = parse_arguments(argc, argv);
+
+    if (!parsed) {
         return 1;
     }
 
-    string command = argv[1];
+    const auto &command = parsed->command;
+    const auto &positionals = parsed->positionals;
+    bool verbose = parsed->verbose;
 
     if (command == "-h" || command == "--help") {
         show_help();
         return 0;
     }
 
-    if (command == "--version") {
-        smversion();
+    if (command == "--version" || command == "--ver") {
+        version();
         return 0;
+    }
+
+    if (sodium_init() < 0) {
+        output::error("Failed to initialize libsodium.");
+        return 1;
     }
 
     if (command == "--sync") {
@@ -65,14 +76,26 @@ int main(int argc, char *argv[]) {
     }
 
     if (command == "--list-installed") {
-        Database db("/tmp/synnical-test-root/var/lib/synnical/installed.db");
+        const auto dblocation = paths::database();
 
-        if (!db.initialize()) {
-            output::error("Failed to initialize database.");
+        if (!std::filesystem::exists(dblocation)) {
+            output::error("Database does not exist.");
             return 1;
         }
 
-        return db.list_installed() ? 0 : 1;
+        try {
+            Database db(dblocation);
+
+            if (!db.initialize()) {
+                output::error("Failed to initialize database.");
+                return 1;
+            }
+
+            return db.list_installed() ? 0 : 1;
+        } catch (const std::exception &e) {
+            output::error(string("Database error: ") + e.what());
+            return 1;
+        }
     }
 
     if (command == "apply") {
@@ -87,36 +110,20 @@ int main(int argc, char *argv[]) {
             return 1;
         }
 
-        if (!apply_timezone(config->timezone, "/tmp/synnical-test-root")) {
+        if (!apply_timezone(config->timezone, paths::root().string())) {
             return 1;
         }
 
         return 0;
     }
-    // Commands below require at least one package argument.
-    if (argc < 3) {
-        output::error("Missing package argument.");
-        return 1;
-    }
 
-    string package = argv[2];
-
-    if (command == "-Fetch" || command == "-FETCH" || command == "-fetch") {
-
-        std::vector<std::string> requested;
-
-        for (int i = 2; i < argc; ++i) {
-            requested.emplace_back(argv[i]);
-        }
-
-        return install_requested(requested) ? 0 : 1;
-
-        return 0;
+    if (command == "-Fetch" || command == "-fetch") {
+        return install_requested(positionals) ? 0 : 1;
     }
 
     if (command == "remove" || command == "rm") {
-        for (int i = 2; i < argc; ++i) {
-            if (!remove_package(argv[i]))
+        for (const auto &package : positionals) {
+            if (!remove_package(package))
                 return 1;
         }
 
@@ -124,11 +131,11 @@ int main(int argc, char *argv[]) {
     }
 
     if (command == "search") {
-        return search_packages(package) ? 0 : 1;
+        return search_packages(positionals[0]) ? 0 : 1;
     }
 
     if (command == "resolve") {
-        return resolve_package(package) ? 0 : 1;
+        return resolve_package(positionals[0]) ? 0 : 1;
     }
 
     output::error("Unknown command: " + command);

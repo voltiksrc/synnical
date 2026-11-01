@@ -3,7 +3,10 @@ hostname = "crypt"
 timezone = "America/Los_Angeles"
 
 [packages]
-install = []
+install = [
+    "git", 
+    "curl"
+]
 
 # This is the user configuration, You can modify your shell, username, 
 # and Home directory. If you need more help and information on this section 
