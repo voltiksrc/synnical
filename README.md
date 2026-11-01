@@ -5,7 +5,7 @@ Synnical is a source-based, declarative/imperative hybrid system manager written
 It handles package installation, dependency resolution, and source compilation.
 
 > [!NOTE]
-> Synnical is still in active development. It's functional, but not yet ready to maintain a system.
+> Synnical is still in active development. It's functional, but not very good or reliable.
 
 ## Features
 
@@ -194,7 +194,7 @@ The repository is still growing! with a goal of **100 packages**.
 
 ## Development status
 
-Synnical is actively being developed, and several features are still incomplete unfortunately. But thats okay! More features have yet to come but expect some soon.
+Synnical is actively being developed, and several features are still incomplete unfortunately. But thats okay! More features have yet to come but expect some more soon.
 
 **Working/tested**
 
