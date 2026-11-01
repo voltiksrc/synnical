@@ -111,7 +111,7 @@ bool install_package(const string &package, const string &expected_version,
     }
 
     if (status == InstallStatus::Installed) {
-        output::info("Package already installed: " + info.name);
+        output::info("Already installed: " + info.name);
         return true;
     }
 
@@ -123,7 +123,7 @@ bool install_package(const string &package, const string &expected_version,
     }
 
     // Download the package and save the archive path so we can use it later.
-    output::stage("Downloading " + info.name + "...");
+    output::stage("Downloading " + info.name);
     string archive = download_source(info.url, info.name, info.version, settings);
 
     if (archive.empty()) {
@@ -212,7 +212,7 @@ bool install_package(const string &package, const string &expected_version,
     if (!db.record_installation(info.name, info.version, deployment.files)) {
         output::error("Failed to record installation.");
 
-        output::stage("Rolling back installation...");
+        output::warn("Rolling back installation");
 
         if (!rollback_deployment(target_root, deployment)) {
             output::error("Rollback incomplete");
