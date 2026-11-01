@@ -1,4 +1,7 @@
 #include <INIReader.h>
+#include <filesystem>
+#include <limits>
+#include <string>
 
 #include "../general/output.hpp"
 #include "settings.hpp"
@@ -7,19 +10,36 @@ Settings default_settings() {
     return Settings{};
 }
 
+// Resolve ~ before storing paths. std::filesystem doesn't expand it for us.
+static std::filesystem::path expand_home(const std::string &text) {
+    if (text == "~")
+        return paths::home();
+    if (text.starts_with("~/"))
+        return paths::home() / text.substr(2);
+    return text;
+}
+
 bool validate_settings(const Settings &settings) {
     if (settings.build_jobs == 0) {
         output::error("Build jobs must be greater than zero.");
         return false;
     }
 
-    if (settings.root.empty()) {
-        output::error("Installation root cannot be empty.");
+    // Keep installations inside Synnical's own data directory during development.
+    const auto safe_base = paths::data().lexically_normal();
+    const auto root = settings.root.lexically_normal();
+    const auto relative = root.lexically_relative(safe_base);
+    if (!root.is_absolute() || relative.empty() || relative == "." ||
+        *relative.begin() == "..") {
+        output::error("Installation root must be inside " + safe_base.string());
         return false;
     }
-
-    if (settings.verbose != true && settings.verbose != false) {
-        output::error("Invalid verbose option: " + settings.verbose);
+    if (!settings.cache.is_absolute()) {
+        output::error("Cache directory must be an absolute path.");
+        return false;
+    }
+    if (settings.progress_style != "trail") {
+        output::error("Unsupported progress style: " + settings.progress_style);
         return false;
     }
 
@@ -36,7 +56,7 @@ bool load_settings(Settings &settings) {
 
     // No config yet? Just use the default settings.
     if (!std::filesystem::exists(config_path))
-        return true;
+        return validate_settings(settings);
 
     INIReader reader(config_path.string());
 
@@ -44,6 +64,10 @@ bool load_settings(Settings &settings) {
         output::error("Failed to parse synnical.ini.");
         return false;
     }
+
+    // Paths stay configurable, but validation keeps the target root isolated.
+    settings.root = expand_home(reader.Get("paths", "root", settings.root.string()));
+    settings.cache = expand_home(reader.Get("paths", "cache", settings.cache.string()));
 
     // General settings
     settings.color = reader.Get("general", "color", settings.color);
@@ -57,6 +81,11 @@ bool load_settings(Settings &settings) {
         return false;
     }
 
+    if (static_cast<unsigned long long>(jobs) >
+        std::numeric_limits<unsigned int>::max()) {
+        output::error("Build job count is too large.");
+        return false;
+    }
     settings.build_jobs = static_cast<unsigned int>(jobs);
     settings.show_build_output =
         reader.GetBoolean("build", "show_output", settings.show_build_output);
