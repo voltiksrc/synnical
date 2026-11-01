@@ -205,7 +205,7 @@ bool install_package(const string &package, const string &expected_version,
 
     Deployment deployment;
 
-    if (!install_staged_files(stage_dir, target_root, deployment)) {
+    if (!install_staged_files(stage_dir, target_root, deployment, settings.verbose)) {
         return false;
     }
 
