@@ -54,9 +54,6 @@ synnical apply
 
 Daycare currently supports parsing packages and system settings, with timezone option working.
 
-> [!IMPORTANT]
-> Review your Daycare configuration before applying it. System settings may be modified and Synnical is not ready to manage a System yet.
-
 **More information:** [Daycare documentation](documentation/daycare.md)
 
 ## Package management
@@ -129,8 +126,9 @@ The main development dependencies are:
 - libsolv and libsolvext
 - libsodium
 - pkg-config
+- GNU Make
 
-Additional build tools such as Make, Ninja, Cargo, Waf, and Go, may be needed depending on what packages you attempt to install.
+Additional build tools such as Ninja, Cargo, Waf, and Go, may be needed depending on what packages you attempt to install.
 
 ### Compile from source
 
