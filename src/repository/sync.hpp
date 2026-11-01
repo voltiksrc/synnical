@@ -1,3 +1,5 @@
 #pragma once
 
-bool sync_repositories();
+#include "../config/settings.hpp"
+
+bool sync_repositories(const Settings &settings);
