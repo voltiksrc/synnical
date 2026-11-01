@@ -14,6 +14,7 @@ pkg_check_modules(SQLITE3 REQUIRED IMPORTED_TARGET sqlite3)
 pkg_check_modules(LIBSOLV REQUIRED IMPORTED_TARGET libsolv)
 pkg_check_modules(LIBSOLVEXT REQUIRED IMPORTED_TARGET libsolvext)
 pkg_check_modules(SODIUM REQUIRED IMPORTED_TARGET libsodium)
+pkg_check_modules(INIReader REQUIRED IMPORTED_TARGET INIReader)
 
 add_executable(synnical
     src/main.cpp
@@ -34,6 +35,7 @@ add_executable(synnical
     src/config/daycare.cpp
     src/config/timezone.cpp
     src/cli/parser.cpp
+    src/config/settings.cpp
 )
 
 target_include_directories(synnical PRIVATE
@@ -53,6 +55,7 @@ target_link_libraries(synnical PRIVATE
     PkgConfig::LIBSOLV
     PkgConfig::LIBSOLVEXT
     PkgConfig::SODIUM
+    PkgConfig::INIReader
 )
 
 add_executable(solv-generator

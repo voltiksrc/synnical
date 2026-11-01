@@ -9,6 +9,7 @@
 
 #include "cli/parser.hpp"
 #include "config/daycare.hpp"
+#include "config/settings.hpp"
 #include "general/output.hpp"
 #include "marea/database.hpp"
 #include "marea/install.hpp"
@@ -46,11 +47,30 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    // Load settings before parsing CLI arguments
+    Settings settings = default_settings();
+
+    if (!load_settings(settings))
+        return 1;
+
+    // Set the color mode before parsing arguments.
+    if (settings.color == "always") {
+        output::set_color_mode(output::ColorMode::Always);
+    } else if (settings.color == "never") {
+        output::set_color_mode(output::ColorMode::Never);
+    } else {
+        output::set_color_mode(output::ColorMode::Auto);
+    }
+
     auto parsed = parse_arguments(argc, argv);
 
     if (!parsed) {
         return 1;
     }
+
+    // CLI flags override the INI configuration.
+    if (parsed->verbose)
+        settings.verbose = true;
 
     const auto &command = parsed->command;
     const auto &positionals = parsed->positionals;

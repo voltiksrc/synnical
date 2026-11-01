@@ -8,6 +8,14 @@
 
 namespace output {
 
+enum class ColorMode { Auto, Always, Never };
+
+inline ColorMode color_mode = ColorMode::Auto;
+
+inline void set_color_mode(ColorMode mode) {
+    color_mode = mode;
+}
+
 namespace color {
 inline constexpr std::string_view yellow = "\033[33m";
 inline constexpr std::string_view green = "\033[32m";
@@ -16,6 +24,13 @@ inline constexpr std::string_view reset = "\033[0m";
 } // namespace color
 
 inline bool use_color(std::ostream &stream) {
+    if (color_mode == ColorMode::Never)
+        return false;
+
+    if (color_mode == ColorMode::Always)
+        return true;
+
+    // Auto mode: respect NO_COLOR and terminal detection.
     if (std::getenv("NO_COLOR") != nullptr)
         return false;
 

@@ -22,3 +22,8 @@ struct Settings {
     bool show_progress = true;
     std::string progress_style = "trail";
 };
+
+Settings default_settings();
+
+bool validate_settings(const Settings &settings);
+bool load_settings(Settings &settings);
