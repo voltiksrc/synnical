@@ -6,7 +6,7 @@
 #include "output.hpp"
 #include "sha256.hpp"
 
-bool verify_sha256(const std::string &file_path, const std::string &expected_hash) {
+bool verify_sha256(const std::string &file_path, const std::string &expected_hash, bool verbose) {
     // Open the downloaded file in binary mode.
     std::ifstream file(file_path, std::ios::binary);
 
@@ -75,12 +75,12 @@ bool verify_sha256(const std::string &file_path, const std::string &expected_has
         return false;
     }
 
-    output::info("SHA-256 verified successfully.");
+    output::success("SHA-256 verified");
 
-    std::array<char, crypto_hash_sha256_BYTES * 2 + 1> hex{};
-
-    sodium_bin2hex(hex.data(), hex.size(), digest.data(), digest.size());
-
-    output::stage(std::string("HASH DOES = ") + hex.data());
+    if (verbose) {
+        std::array<char, crypto_hash_sha256_BYTES * 2 + 1> hex{};
+        sodium_bin2hex(hex.data(), hex.size(), digest.data(), digest.size());
+        output::info(std::string("SHA-256: ") + hex.data());
+    }
     return true;
 }
