@@ -17,7 +17,6 @@ namespace fs = std::filesystem;
 
 namespace {
 
-const std::string test_root = paths::root().string();
 
 struct Entry {
     fs::path source;
@@ -55,15 +54,30 @@ bool safe_path(const fs::path &path) {
     return true;
 }
 
-// Don't let deployment touch Gentoo yet
+// Restrict deployment to Synnical's data directory, never the host root.
 int open_root(const fs::path &root) {
-    if (fs::absolute(root).lexically_normal() != fs::path(test_root))
+    const fs::path safe_base = paths::data().lexically_normal();
+    const fs::path target = fs::absolute(root).lexically_normal();
+    const fs::path relative = target.lexically_relative(safe_base);
+
+    if (relative.empty() || relative == "." || *relative.begin() == "..")
         return -1;
 
-    if (mkdir(test_root.c_str(), 0755) != 0 && errno != EEXIST)
+    // Refuse symlinked ancestors before opening the destination.
+    fs::path walked;
+    for (const auto &part : target) {
+        walked /= part;
+        std::error_code ec;
+        if (fs::is_symlink(fs::symlink_status(walked, ec)))
+            return -1;
+    }
+
+    std::error_code ec;
+    fs::create_directories(target, ec);
+    if (ec)
         return -1;
 
-    return open(test_root.c_str(), O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+    return open(target.c_str(), O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
 }
 
 // Walk from the root fd so a parent symlink can't redirect us
