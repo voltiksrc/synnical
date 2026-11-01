@@ -37,6 +37,7 @@ add_executable(synnical
     src/cli/parser.cxx
     src/system/build_output.cxx
     src/config/settings.cxx
+    src/build/state.cxx
 )
 
 target_include_directories(synnical PRIVATE

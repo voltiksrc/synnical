@@ -1,0 +1,405 @@
+{
+    ["detect.sdks.find_dotnet"] = {
+        dotnet = {
+            sdkdir = "/opt/dotnet-sdk-bin-10.0/sdk/10.0.111",
+            sdkver = "10.0.111",
+            bindir = "/usr/bin",
+            sdks = {
+                {
+                    version = "10.0.111",
+                    directory = "/opt/dotnet-sdk-bin-10.0/sdk/10.0.111"
+                }
+            },
+            version = "10.0.111",
+            runtimes = {
+                {
+                    name = "Microsoft.AspNetCore.App",
+                    version = "10.0.11"
+                },
+                {
+                    name = "Microsoft.NETCore.App",
+                    version = "10.0.11"
+                }
+            }
+        }
+    },
+    find_programver = {
+        ["/usr/bin/zig"] = "0.15.2",
+        ["/usr/bin/dotnet"] = "10.0.111"
+    },
+    find_program_gcc_arch_x86_64_plat_linux_checktoolcc = {
+        gcc = "/usr/bin/gcc"
+    },
+    ["core.tools.gcc.has_cflags"] = {
+        ["/usr/bin/gcc_"] = {
+            ["-pipe"] = true,
+            ["-print-search-dirs"] = true,
+            ["-print-multi-lib"] = true,
+            ["-S"] = true,
+            ["-pass-exit-codes"] = true,
+            ["-dumpversion"] = true,
+            ["-print-multiarch"] = true,
+            ["-pie"] = true,
+            ["--version"] = true,
+            ["-v"] = true,
+            ["--param"] = true,
+            ["-x"] = true,
+            ["-print-sysroot-headers-suffix"] = true,
+            ["-dumpspecs"] = true,
+            ["-Xlinker"] = true,
+            ["-print-multi-os-directory"] = true,
+            ["--help"] = true,
+            ["-Xassembler"] = true,
+            ["-o"] = true,
+            ["-Xpreprocessor"] = true,
+            ["-time"] = true,
+            ["-E"] = true,
+            ["-B"] = true,
+            ["-dumpmachine"] = true,
+            ["-print-multi-directory"] = true,
+            ["-no-canonical-prefixes"] = true,
+            ["-shared"] = true,
+            ["--target-help"] = true,
+            ["-print-libgcc-file-name"] = true,
+            ["-print-sysroot"] = true,
+            ["-save-temps"] = true,
+            ["-c"] = true
+        }
+    },
+    find_package_linux_x86_64_fetch_package_system = {
+        ["pkgconfig::libsolv_4e0143c97b65425b855ad5fd03038b6a_release_latest_external"] = {
+            shared = true,
+            version = "0.7.37",
+            links = {
+                "solv"
+            },
+            libfiles = {
+                "/usr/lib64/libsolv.so"
+            }
+        },
+        ["pkgconfig::sqlite3_4e0143c97b65425b855ad5fd03038b6a_release_latest_external"] = {
+            shared = true,
+            version = "3.53.4",
+            links = {
+                "sqlite3"
+            },
+            libfiles = {
+                "/usr/lib64/libsqlite3.so"
+            }
+        },
+        ["pkgconfig::libsolvext_4e0143c97b65425b855ad5fd03038b6a_release_latest_external"] = {
+            shared = true,
+            version = "0.7.37",
+            links = {
+                "solvext",
+                "solv"
+            },
+            libfiles = {
+                "/usr/lib64/libsolvext.so",
+                "/usr/lib64/libsolv.so"
+            }
+        },
+        ["pkgconfig::libsodium_4e0143c97b65425b855ad5fd03038b6a_release_latest_external"] = {
+            shared = true,
+            version = "1.0.22",
+            links = {
+                "sodium"
+            },
+            libfiles = {
+                "/usr/lib64/libsodium.so"
+            }
+        },
+        ["pkgconfig::INIReader_4e0143c97b65425b855ad5fd03038b6a_release_latest_external"] = {
+            shared = true,
+            version = "62",
+            links = {
+                "INIReader"
+            },
+            libfiles = {
+                "/usr/lib64/libINIReader.so"
+            }
+        },
+        ["pkgconfig::libcurl_4e0143c97b65425b855ad5fd03038b6a_release_latest_external"] = {
+            shared = true,
+            version = "8.23.0",
+            links = {
+                "curl"
+            },
+            libfiles = {
+                "/usr/lib64/libcurl.so"
+            }
+        },
+        ["pkgconfig::tomlplusplus_4e0143c97b65425b855ad5fd03038b6a_release_latest_external"] = {
+            defines = {
+                "TOML_HEADER_ONLY=0",
+                "TOML_SHARED_LIB=1"
+            },
+            links = {
+                "tomlplusplus"
+            },
+            shared = true,
+            version = "3.4.0",
+            libfiles = {
+                "/usr/lib64/libtomlplusplus.so"
+            }
+        },
+        ["pkgconfig::libarchive_4e0143c97b65425b855ad5fd03038b6a_release_latest_external"] = {
+            shared = true,
+            version = "3.8.10",
+            links = {
+                "archive"
+            },
+            libfiles = {
+                "/usr/lib64/libarchive.so"
+            }
+        }
+    },
+    ["core.tools.gcc.has_ldflags"] = {
+        ["/usr/bin/g++_"] = {
+            ["--dynamic-list-cpp-new"] = true,
+            ["--strip-discarded"] = true,
+            ["--undefined-version"] = true,
+            ["--undefined"] = true,
+            ["--no-strip-discarded"] = true,
+            ["-Trodata-segment"] = true,
+            ["--dynamic-list-data"] = true,
+            ["--warn-alternate-em"] = true,
+            ["--no-warn-execstack"] = true,
+            ["-o"] = true,
+            ["--traditional-format"] = true,
+            ["-g"] = true,
+            ["--section-start"] = true,
+            ["--dynamic-linker"] = true,
+            ["--section-ordering-file"] = true,
+            ["--no-dynamic-linker"] = true,
+            ["--no-as-needed"] = true,
+            ["-dT"] = true,
+            ["--pic-executable"] = true,
+            ["--gnu-tls-tag"] = true,
+            ["--map-whole-files"] = true,
+            ["--no-warnings"] = true,
+            ["--architecture"] = true,
+            ["--eh-frame-hdr"] = true,
+            ["--gc-sections"] = true,
+            ["--spare-dynamic-tags"] = true,
+            ["--copy-dt-needed-entries"] = true,
+            ["--accept-unknown-input-arch"] = true,
+            ["-Ttext-segment"] = true,
+            ["--enable-non-contiguous-regions-warnings"] = true,
+            ["--ctf-variables"] = true,
+            ["-Tldata-segment"] = true,
+            ["-Qy"] = true,
+            ["--sort-section"] = true,
+            ["-EB"] = true,
+            ["-l"] = true,
+            ["--no-print-gc-sections"] = true,
+            ["--defsym"] = true,
+            ["-L"] = true,
+            ["--disable-multiple-abs-defs"] = true,
+            ["--fatal-warnings"] = true,
+            ["-Y"] = true,
+            ["--rosegment"] = true,
+            ["--gpsize"] = true,
+            ["--ignore-unresolved-symbol"] = true,
+            ["--no-omagic"] = true,
+            ["--library"] = true,
+            ["--print-output-format"] = true,
+            ["--no-warn-search-mismatch"] = true,
+            ["-b"] = true,
+            ["--nmagic"] = true,
+            ["--start-lib"] = true,
+            ["--version-exports-section"] = true,
+            ["--no-print-map-locals"] = true,
+            ["--export-dynamic"] = true,
+            ["--orphan-handling"] = true,
+            ["--allow-shlib-undefined"] = true,
+            ["--relax"] = true,
+            ["--no-print-map-discarded"] = true,
+            ["--discard-locals"] = true,
+            ["--filter"] = true,
+            ["-V"] = true,
+            ["--no-export-dynamic"] = true,
+            ["--print-memory-usage"] = true,
+            ["--disable-linker-version"] = true,
+            ["--enable-linker-version"] = true,
+            ["-Tbss"] = true,
+            ["--enable-new-dtags"] = true,
+            ["-no-pie"] = true,
+            ["--library-path"] = true,
+            ["--no-accept-unknown-input-arch"] = true,
+            ["--dependency-file"] = true,
+            ["--no-undefined"] = true,
+            ["--warn-unresolved-symbols"] = true,
+            ["--export-dynamic-symbol"] = true,
+            ["--image-base"] = true,
+            ["--retain-symbols-file"] = true,
+            ["-debug"] = true,
+            ["--output"] = true,
+            ["-flto"] = true,
+            ["--force-group-allocation"] = true,
+            ["-f"] = true,
+            ["--enable-non-contiguous-regions"] = true,
+            ["-Bno-symbolic"] = true,
+            ["--export-dynamic-symbol-list"] = true,
+            ["--no-define-common"] = true,
+            ["-init"] = true,
+            ["--auxiliary"] = true,
+            ["--warn-once"] = true,
+            ["--script"] = true,
+            ["--warn-rwx-segments"] = true,
+            ["--start-group"] = true,
+            ["--require-defined"] = true,
+            ["--print-map-discarded"] = true,
+            ["-soname"] = true,
+            ["-Map"] = true,
+            ["--no-gnu2-tls-tag"] = true,
+            ["--check-sections"] = true,
+            ["--gc-keep-exported"] = true,
+            ["--no-gc-sections"] = true,
+            ["--no-warn-rwx-segments"] = true,
+            ["--warn-execstack-objects"] = true,
+            ["--cref"] = true,
+            ["-EL"] = true,
+            ["--no-allow-shlib-undefined"] = true,
+            ["-F"] = true,
+            ["--error-execstack"] = true,
+            ["--discard-none"] = true,
+            ["-dp"] = true,
+            ["--mri-script"] = true,
+            ["--out-implib"] = true,
+            ["--warn-textrel"] = true,
+            ["--relocatable"] = true,
+            ["--target-help"] = true,
+            ["--unique"] = true,
+            ["--trace"] = true,
+            ["-plugin"] = true,
+            ["--as-needed"] = true,
+            ["--no-error-rwx-segments"] = true,
+            ["-plugin-opt"] = true,
+            ["-R"] = true,
+            ["-Ttext"] = true,
+            ["--default-symver"] = true,
+            ["-c"] = true,
+            ["--omagic"] = true,
+            ["-Bsymbolic-functions"] = true,
+            ["--split-by-reloc"] = true,
+            ["--no-undefined-version"] = true,
+            ["--no-ld-generated-unwind-info"] = true,
+            ["--stats"] = true,
+            ["-assert"] = true,
+            ["--pop-state"] = true,
+            ["-Bsymbolic"] = true,
+            ["--error-handling-script"] = true,
+            ["-e"] = true,
+            ["--remap-inputs"] = true,
+            ["--no-keep-memory"] = true,
+            ["--discard-all"] = true,
+            ["-I"] = true,
+            ["--no-rosegment"] = true,
+            ["--no-demangle"] = true,
+            ["--allow-multiple-definition"] = true,
+            ["--link-mapless"] = true,
+            ["--help"] = true,
+            ["-A"] = true,
+            ["--end-group"] = true,
+            ["--error-unresolved-symbols"] = true,
+            ["-h"] = true,
+            ["--just-symbols"] = true,
+            ["-P"] = true,
+            ["--warn-multiple-gp"] = true,
+            ["--print-map-locals"] = true,
+            ["--no-stats"] = true,
+            ["--no-copy-dt-needed-entries"] = true,
+            ["--no-error-execstack"] = true,
+            ["--remap-inputs-file"] = true,
+            ["-z"] = true,
+            ["--default-script"] = true,
+            ["--split-by-file"] = true,
+            ["--no-whole-archive"] = true,
+            ["--demangle"] = true,
+            ["-static"] = true,
+            ["-a"] = true,
+            ["--no-warn-mismatch"] = true,
+            ["-T"] = true,
+            ["-nostdlib"] = true,
+            ["--whole-archive"] = true,
+            ["-plugin-save-temps"] = true,
+            ["--sort-common"] = true,
+            ["--default-imported-symver"] = true,
+            ["--noinhibit-exec"] = true,
+            ["--print-gc-sections"] = true,
+            ["--emit-relocs"] = true,
+            ["--print-sysroot"] = true,
+            ["-qmagic"] = true,
+            ["-rpath"] = true,
+            ["--warn-common"] = true,
+            ["--warn-execstack"] = true,
+            ["--no-check-sections"] = true,
+            ["-m"] = true,
+            ["-Ur"] = true,
+            ["-rpath-link"] = true,
+            ["-O"] = true,
+            ["--reduce-memory-overheads"] = true,
+            ["--end-lib"] = true,
+            ["--no-relax"] = true,
+            ["--oformat"] = true,
+            ["--task-link"] = true,
+            ["--verbose"] = true,
+            ["--push-state"] = true,
+            ["-Tdata"] = true,
+            ["--version-script"] = true,
+            ["--dynamic-list"] = true,
+            ["--force-exe-suffix"] = true,
+            ["--no-ctf-variables"] = true,
+            ["--disable-new-dtags"] = true,
+            ["--version"] = true,
+            ["-u"] = true,
+            ["--ld-generated-unwind-info"] = true,
+            ["--no-eh-frame-hdr"] = true,
+            ["-G"] = true,
+            ["--format"] = true,
+            ["-y"] = true,
+            ["--strip-all"] = true,
+            ["--strip-debug"] = true,
+            ["-Bshareable"] = true,
+            ["--wrap"] = true,
+            ["-fini"] = true,
+            ["--print-map"] = true,
+            ["--entry"] = true,
+            ["--no-gnu-tls-tag"] = true,
+            ["--error-rwx-segments"] = true,
+            ["--no-map-whole-files"] = true,
+            ["--no-fatal-warnings"] = true,
+            ["--trace-symbol"] = true,
+            ["--discard-sframe"] = true,
+            ["--dynamic-list-cpp-typeinfo"] = true,
+            ["--warn-section-align"] = true,
+            ["-Bgroup"] = true,
+            ["--gnu2-tls-tag"] = true
+        }
+    },
+    find_program_gcc_arch_x86_64_plat_linux_checktoolld = {
+        ["g++"] = "/usr/bin/g++"
+    },
+    find_program = {
+        ["pkg-config"] = "/usr/bin/pkg-config",
+        gzip = "/usr/bin/gzip",
+        ["/usr/bin/gcc"] = "/usr/bin/gcc",
+        nim = false,
+        ["/usr/bin/g++"] = "/usr/bin/g++",
+        gcc = "/usr/bin/gcc",
+        zig = "/usr/bin/zig",
+        dotnet = "/usr/bin/dotnet",
+        tar = "/usr/bin/tar",
+        git = "/usr/bin/git"
+    },
+    ["lib.detect.has_flags"] = {
+        ["linux_x86_64_/usr/bin/gcc__cc__-m64_-fPIC"] = true,
+        ["linux_x86_64_/usr/bin/g++__ld__-m64 -m64_-fPIC"] = true,
+        ["linux_x86_64_/usr/bin/gcc__cc_cxflags_-m64_-fdiagnostics-color=always"] = true,
+        ["linux_x86_64_/usr/bin/gcc__cc_cxflags_-m64_-Wno-gnu-line-marker -Werror"] = true
+    },
+    ["detect.sdks.find_ascend"] = {
+        ascend = false
+    }
+}

@@ -20,11 +20,14 @@ static int copy_data(struct archive *ar, struct archive *aw) {
 
     for (;;) {
         r = archive_read_data_block(ar, &buff, &size, &offset);
+
         if (r == ARCHIVE_EOF)
             return (ARCHIVE_OK);
+
         if (r < ARCHIVE_OK)
             return (r); // fuck this im not commenting it
         r = archive_write_data_block(aw, buff, size, offset);
+
         if (r < ARCHIVE_OK) {
             output::error(archive_error_string(aw));
             return (r);
@@ -164,9 +167,10 @@ bool extract_source(const string &archive_path, const string &name, const string
     // Important flags for safe extraction
     flags |= ARCHIVE_EXTRACT_TIME;
     flags |= ARCHIVE_EXTRACT_SECURE_NODOTDOT;
-    // flags |= ARCHIVE_EXTRACT_SECURE_NOABSOLUTEPATHS;
     flags |= ARCHIVE_EXTRACT_SECURE_SYMLINKS;
     flags |= ARCHIVE_EXTRACT_NO_OVERWRITE;
+    // Temporarily comment this out until we fix paths
+    // flags |= ARCHIVE_EXTRACT_SECURE_NOABSOLUTEPATHS;
 
     archive_read_support_filter_all(reader);
     archive_read_support_format_all(

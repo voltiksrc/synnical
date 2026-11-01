@@ -1,18 +1,23 @@
+# Welcome to the daycare configuration example! daycare holds 4 sections, [system],
+# [packages], [users] table, and repositories. Repositories does not yet work, neither does
+# the users table.
 [system]
 hostname = "crypt"
 timezone = "America/Los_Angeles"
 
+# Packages table is an array
 [packages]
 install = [
     "git", 
     "curl"
 ]
 
-# This is the user configuration, You can modify your shell, username, 
-# and Home directory. If you need more help and information on this section 
-# Than I highly recommend you go read my documentation on daycare and the options.
+# This is the user configuration, You can modify your shell, and username.
+# If you need more help and information on this section 
+# Than I highly recommend you go read my documentation on daycare.
 [users.voltik]
 shell = "/usr/bin/fish"
 
+# Planned
 [repositories]
 enabled = ["main"]

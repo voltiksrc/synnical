@@ -3,7 +3,7 @@
 #include <toml++/toml.hpp>
 #include <vector>
 
-#include "../general/output.hpp"
+#include "../build/state.hpp"
 #include "../core/build.hpp"
 #include "../core/database.hpp"
 #include "../core/deploy.hpp"
@@ -13,6 +13,7 @@
 #include "../core/sha256.hpp"
 #include "../core/solver.hpp"
 #include "../core/stage.hpp"
+#include "../general/output.hpp"
 #include "../repository/recipe.hpp"
 
 using std::string;
@@ -137,17 +138,43 @@ bool install_package(const string &package, const string &expected_version,
         return false;
     }
 
-    // Extract the downloaded archive after verifying its SHA-256.
-    output::stage("Extracting sources");
+    fs::path extract_dir = settings.cache / "build" / (info.name + "-" + info.version);
+    fs::path state_path = extract_dir / ".synnical-state";
 
-    if (!extract_source(archive, info.name, info.version, settings.cache / "build")) {
-        output::error("Extraction failed.");
-        return false;
+    string current_hash = info.sha256;
+
+    BuildState state = load_state(state_path);
+
+    if (state.source_hash != current_hash) {
+        state = BuildState{};
+        state.source_hash = current_hash;
+    }
+
+    bool can_resume = settings.resume && state.extracted && state.source_hash == current_hash &&
+                      fs::is_directory(extract_dir);
+
+    if (can_resume) {
+        output::stage("Resuming previous extraction.");
+    } else {
+        // Extract the downloaded archive after verifying the directory doesn't already exist.
+        output::stage("Extracting sources");
+
+        if (!extract_source(archive, info.name, info.version, settings.cache / "build")) {
+            output::error("Extraction failed.");
+            return false;
+        }
+
+        state.extracted = true;
+        state.configured = false;
+        state.built = false;
+
+        if (!save_state(state_path, state)) {
+            output::error("Failed to save build state.");
+            return false;
+        }
     }
 
     // Find the source directory.
-    fs::path extract_dir = settings.cache / "build" / (info.name + "-" + info.version);
-
     fs::path source_dir;
 
     if (!fs::is_directory(extract_dir)) {
