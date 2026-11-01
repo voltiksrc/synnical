@@ -5,6 +5,7 @@ recipes
 
 # Cache files
 .cache/
+.xmake/
 
 # Compiled files
 *.o
@@ -20,3 +21,4 @@ recipes
 # Temporary files
 *.log
 /lazygit
+/install.sh
