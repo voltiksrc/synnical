@@ -1,5 +1,5 @@
 #include "daycare.hpp"
-#include "../general/output.hpp"
+#include "../common/output.hpp"
 
 #include <filesystem>
 #include <string>

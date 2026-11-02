@@ -3,7 +3,7 @@
 #include <limits>
 #include <string>
 
-#include "../general/output.hpp"
+#include "../common/output.hpp"
 #include "settings.hpp"
 
 Settings default_settings() {

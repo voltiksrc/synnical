@@ -2,7 +2,7 @@
 #include <iostream>
 #include <sstream>
 
-#include "../general/output.hpp"
+#include "../common/output.hpp"
 #include "build_output.hpp"
 
 namespace {

@@ -12,7 +12,7 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 
-#include "../general/output.hpp"
+#include "../common/output.hpp"
 #include "download.hpp"
 
 using std::string;

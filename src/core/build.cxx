@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-#include "../general/output.hpp"
+#include "../common/output.hpp"
 #include "../system/process.hpp"
 #include "build.hpp"
 

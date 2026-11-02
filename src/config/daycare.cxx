@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "daycare.hpp"
-#include "../general/output.hpp"
+#include "../common/output.hpp"
 
 using std::string;
 namespace fs = std::filesystem;

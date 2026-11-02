@@ -13,7 +13,7 @@
 #include "../core/sha256.hpp"
 #include "../core/solver.hpp"
 #include "../core/stage.hpp"
-#include "../general/output.hpp"
+#include "../common/output.hpp"
 #include "../repository/recipe.hpp"
 
 using std::string;

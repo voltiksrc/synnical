@@ -21,7 +21,7 @@
 #include <solv/transaction.h>
 #undef requires
 
-#include "../general/output.hpp"
+#include "../common/output.hpp"
 #include "database.hpp"
 #include "solver.hpp"
 

@@ -2,7 +2,7 @@
 #include <string>
 #include <string_view>
 
-#include "../general/output.hpp"
+#include "../common/output.hpp"
 #include "parser.hpp"
 
 using std::nullopt;

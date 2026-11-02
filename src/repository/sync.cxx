@@ -14,7 +14,7 @@
 #include <solv/repo_solv.h>
 #undef requires
 
-#include "general/output.hpp"
+#include "common/output.hpp"
 #include "repository/sync.hpp"
 
 namespace fs = std::filesystem;

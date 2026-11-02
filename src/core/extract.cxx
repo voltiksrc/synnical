@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include <vector>
 
-#include "../general/output.hpp"
+#include "../common/output.hpp"
 #include "extract.hpp"
 
 using std::string;

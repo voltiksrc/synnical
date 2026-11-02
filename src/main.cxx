@@ -9,7 +9,7 @@
 #include "cli/parser.hpp"
 #include "config/daycare.hpp"
 #include "config/settings.hpp"
-#include "general/output.hpp"
+#include "common/output.hpp"
 #include "core/database.hpp"
 #include "core/install.hpp"
 #include "core/remove.hpp"

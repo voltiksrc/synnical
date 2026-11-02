@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "database.hpp"
-#include "../general/output.hpp"
+#include "../common/output.hpp"
 
 Database::Database(const std::filesystem::path &path) {
     int result = sqlite3_open(path.c_str(), &db_);

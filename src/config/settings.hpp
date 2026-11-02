@@ -3,7 +3,7 @@
 #include <filesystem>
 #include <string>
 
-#include "../general/paths.hpp"
+#include "../common/paths.hpp"
 
 struct Settings {
     // Paths

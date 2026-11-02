@@ -1,4 +1,4 @@
-#include "../general/paths.hpp"
+#include "../common/paths.hpp"
 #include <cerrno>
 #include <exception>
 #include <fcntl.h>

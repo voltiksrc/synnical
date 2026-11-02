@@ -27,7 +27,7 @@ add_files(
 	"src/build/state.cxx"
 )
 
-add_includedirs("src", "src/core", "src/repository", "src/general", "src/system", "src/config")
+add_includedirs("src", "src/core", "src/repository", "src/common", "src/system", "src/config")
 
 add_packages(
 	"pkgconfig::libcurl",
